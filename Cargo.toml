@@ -1,5 +1,5 @@
 [package]
-name = "uom-intervals"
+name = "intervals-general"
 version = "0.1.0"
 authors = ["Scott Moeller <electronjoe@gmail.com>"]
 

@@ -1,31 +1,33 @@
-# uom-intervals Crate RFC
+# intervals-general Crate RFC
 
 * Start Date Oct 13, 2018
+* Last Edit Nov 11, 2018
 * Work in Progress
 * Scott Moeller
 
 ## Summary
 
-Addition of a new Crate named uom-intervals which supports rigorous interval definitions, interval collections and common interval operations, all while enforcing units of measure.
+Addition of a new Crate named intervals-general which supports rigorous interval definitions (e.g. type-enforced representations of [all real interval types](https://proofwiki.org/wiki/Definition:Real_Interval_Types)), interval collections and common interval operations, all while operating over generic bound data types provided required traits are met (e.g. can use [units of measure](https://crates.io/crates/uom) as bounds).
 
 ## Motivation
 
-In working to write a simulation tool with support for e.g. step function representations that enforce units of measure - I found myself looking for an interval representation that would accept [uom](https://crates.io/crates/uom) types and was capable of sufficient expressivity so as to be closed under common Interval operations of {Union, Intersection, Complement}.  Not finding a crate that met those criteria, I looked at other language implementations and began writing a proposal for a child-crate for [uom](https://crates.io/crates/uom).
+In working to write a simulation tool with support for e.g. step function representations that enforce units of measure - I found myself looking for an interval representation that would accept [uom](https://crates.io/crates/uom) types and was capable of sufficient expressivity so as to be closed under common Interval operations of {Union, Intersection, Complement}.  Not finding a crate that met those criteria, I looked at other language implementations and began writing a proposal for intervals-general.
 
 ### Requirements
 
 The Requirements for the library are then:
 
-1. Support for intervals that enforce units of measure
+1. Support for intervals with bound data types provied via generic
 1. Support for [open](https://proofwiki.org/wiki/Definition:Real_Interval_Types#Open_Interval), [closed](https://proofwiki.org/wiki/Definition:Real_Interval_Types#Closed_Interval) and [half-open](https://proofwiki.org/wiki/Definition:Real_Interval/Half-Open) Intervals
 1. Support for the type-enforced representation of the [empty](https://proofwiki.org/wiki/Definition:Real_Interval/Empty) Interval
 1. Support for the type-enforced representation of [unbounded](https://proofwiki.org/wiki/Definition:Real_Interval_Types#Unbounded_Intervals) Intervals
 
-Also nice to have
+Additional desires:
 
 1. no_std support
 1. No use of of panic, assert
 1. Minimize error handling by design
+1. Make the library hard to use incorrectly
 
 ### Requirement Reasoning
 
@@ -68,25 +70,34 @@ Intervals are represented by an Enum, representing all combinations of open, clo
 
 Nomenclature below is pulled from [proofwiki:Real Interval Types](https://proofwiki.org/wiki/Definition:Real_Interval_Types).
 
+For Intervals containing bounded left and right extents, a design challenge arrises in the handling of the bound parameters - specifically the interaction of the left and right bound values which are expected to have a specific ordering depending upon Interval type.  In order to enable Interval representation and construction by simple enum, Intervals with left and right bounded values will first construct a BoundPair<T> struct (with BoundPair::new() - returning a Result that can be error checked).  Therefore an invalid Interval enum cannot be constructed.
+
 ```rust
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum Interval<T> {
-    ClosedBounded { left: T, right: T },         # [a, b]
-    OpenBounded { left: T, right: T },           # (a, b)
-    LeftHalfOpenBounded { left: T, right: T },   # (a, b]
-    RightHalfOpenBounded { left: T, right: T },  # [a, b)
-    ClosedBoundedRight { right: T },             # (-inf, a]
-    OpenBoundedRight { right: T },               # (-inf, a)
-    ClosedBoundedLeft { left: T },               # [a, inf)
-    OpenBoundedLeft { left: T },                 # (a, inf)
-    Unbounded,                                   # (-inf, inf)
-    Empty,                                       # Empty Interval
+pub struct BoundPair<T> {
+    left: T,
+    right: T,
 }
 ```
 
-### Handling Bounds at Interval Creation
+Then the Interval enum variants are defined as follows:
 
-See the discussion [below](#unresolved-handling-bounds-at-interval-creation) on alternatives for error checking of Interval Bounds during creation.
+```rust
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum Interval<T> {
+    ClosedBounded { bound_pair: BoundPair<T> },       // [a, b]
+    OpenBounded { bound_pair: BoundPair<T> },         // (a, b)
+    LeftHalfOpenBounded { bound_pair: BoundPair<T> }, // (a, b]
+    RightHalfOpenBounded { bound_pair: BoundPair<T> }, // [a, b)
+    ClosedBoundedRight { right: T },                  // (-inf, a]
+    OpenBoundedRight { right: T },                    // (-inf, a)
+    ClosedBoundedLeft { left: T },                    // [a, inf)
+    OpenBoundedLeft { left: T },                      // (a, inf)
+    Singleton { at: T },                              // [a]
+    Unbounded,                                        // (-inf, inf)
+    Empty,                                            // Empty Interval
+}
+```
 
 ### Traits Required by Bound Data Type
 
@@ -142,43 +153,9 @@ enum RightBound<T> {
 }
 ```
 
-## Unresolved Questions
+### Alternative Handling of Bounds at Interval Creation
 
-### Unresolved Rounding Mode a Concern
-
-Depending upon the arithmetic being applied to intervals, rounding error could result in a set of intervals mutating beyond expectation. I have convinced myself that the rounding issues are no more severe than you would experience from general floating point use representations (that is, no Interval specific thorns appear to be raised) - specifically even under scaling (e.g. *2.5 [1, 2) = [2.5, 5.0)) a collection of intervals which were continuous in the Real Domain prior to scaling - remain continuous in the Real Domain after scaling.  Therefore rounding errors cannot cause Continuous collections of Intervals to becoe discontinuous for some Domain (ditto for offset modifications to Intervals, e.g. +2.5 [1, 2) = [3.5, 4.5)).  If however the width of an Interval is a property that is intended to be relied upon (e.g. [Interval Arithmetic](http://mathworld.wolfram.com/IntervalArithmetic.html)) - then rounding mode is an important consideration as it can ruin expected properties of the Interval under mutation.  As presently defined, this Interval library may not support Interval Arithmetic use for this reason.
-
-### Unresolved Static Interval Type Support
-
-In the Boost Interval Container Library mentioned above, two variants of Interval are offered (static compile-time enforced of a single type, or dynamic runtime type supporting mixed Interval types).  The primary downside to static compile-time single types is that some operations are unsupported (e.g. complement) - and many real-world Interval representations require mixed Interval types (e.g. a collection of Intervals representing from -inf to +inf representing the domain of a step function).
-
-### Unresolved Overflow Behavior
-
-No attempt to detect overflow or underflow is applied - can this be done (transforming overflow / underflow to an Unbounded Interval?).
-
-### Unresolved Handling Bounds at Interval Creation
-
-For Intervals with Left and Right Bounds, the user could provide invalid values.  For example, where the Left Bound is greater than the Right Bound, or where the bounds are Equal (in which case this should be a Singleton Interval).  The objective in this library is to catch such errors in a manner that exposes them to the library user, but also to minimize the opportunity for such errors - and to NOT throw exceptions.  Broadly the options encompass:
-
-1. Direct construction of Interval Enum
-    * Forces runtime detection of invalid Interval Enum bounds
-    * Highly undesirable, as the issue would only be exposed during operations on Intervals
-    * How does one prevent this? Simply omit pub on Enum variant definitions?
-1. Offer new() constructor
-    * Can the target Enum Type be specified to new() - and new returns Interval<T>?
-    * If not, we need many new() variants e.g. per Interval Enum Variant?
-1. Builder pattern
-    * Feels heavyweight for such a simple object, particularly with Variants enumerated
-
-My preference is thew new() option, if it's possible in Rust.  Something like:
-
-```rust
-pub fn new(variant: Interval<T>::variant, left_bound: optional<T>, right_bound: optional<T>)
-  -> optional<Interval<T>> {
-    // Validate bounds are appropriate for variant, else return None
-    // Create and return appropriate Interval Variant
-}
-```
+For Intervals with Left and Right Bounds, the user could provide invalid values.  For example, where the Left Bound is greater than the Right Bound, or where the bounds are Equal (in which case this should be a Singleton Interval).  The objective in this library is to catch such errors in a manner that exposes them to the library user, but also to minimize the opportunity for such errors - and to NOT throw exceptions.  The design above proposes that a separate struct (BoundPair<T>) be constructed and error checked, then passed into Enum construction for Intervals requiring two bounded values.
 
 Aside from the sanitization method applied above - there is also the question of detailed behavior when Bounds are invalid or inappropriate for the Interval Variant.  Alternatives considered include:
 
@@ -200,6 +177,20 @@ Aside from the sanitization method applied above - there is also the question of
 1. Support for an Invalid Interval Enum variant
 
 The question is whether it's better to provide a library which avoids errors so long as a valid interval can be constructed, or whether the interval construction should be providing defense for the programmer when their bounds are not ordered as required.  Reviewing the other Interval libraries in the wild, some provide no validation whatsoever (e.g. [Haskell IntervalMap package](http://hackage.haskell.org/package/IntervalMap), [Boost Interval Container Library - ICL](https://www.boost.org/doc/libs/1_60_0/libs/icl/doc/html/boost_icl/examples/interval.html)).  Others apply the Bound Reversal when mis-ordered (e.g. [Haskell intervals package](http://hackage.haskell.org/package/intervals)). Some Assert if Bound ordering is incorrect (e.g. [Rust Honest Intervals](https://crates.io/crates/honestintervals)).
+
+## Unresolved Questions
+
+### Unresolved Rounding Mode a Concern
+
+Depending upon the arithmetic being applied to intervals, rounding error could result in a set of intervals mutating beyond expectation. I have convinced myself that the rounding issues are no more severe than you would experience from general floating point use representations (that is, no Interval specific thorns appear to be raised) - specifically even under scaling (e.g. *2.5 [1, 2) = [2.5, 5.0)) a collection of intervals which were continuous in the Real Domain prior to scaling - remain continuous in the Real Domain after scaling.  Therefore rounding errors cannot cause Continuous collections of Intervals to becoe discontinuous for some Domain (ditto for offset modifications to Intervals, e.g. +2.5 [1, 2) = [3.5, 4.5)).  If however the width of an Interval is a property that is intended to be relied upon (e.g. [Interval Arithmetic](http://mathworld.wolfram.com/IntervalArithmetic.html)) - then rounding mode is an important consideration as it can ruin expected properties of the Interval under mutation.  As presently defined, this Interval library may not support Interval Arithmetic use for this reason.
+
+### Unresolved Static Interval Type Support
+
+In the Boost Interval Container Library mentioned above, two variants of Interval are offered (static compile-time enforced of a single type, or dynamic runtime type supporting mixed Interval types).  The primary downside to static compile-time single types is that some operations are unsupported (e.g. complement) - and many real-world Interval representations require mixed Interval types (e.g. a collection of Intervals representing from -inf to +inf representing the domain of a step function).
+
+### Unresolved Overflow Behavior
+
+No attempt to detect overflow or underflow is applied - can this be done (transforming overflow / underflow to an Unbounded Interval?).
 
 ## Resources
 
