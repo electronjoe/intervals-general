@@ -117,11 +117,9 @@ The computation complexity of interval operations is increased due to the dynami
 
 There are existig crates in this space, and it would be improper to create a new crate if contribution to the existing ecosystem was a reasonable path forward.  So here I'll enumerate the crates I have found - and why I believe they are not aligned with the goals listed in [Motivation](#motivation).  I'll also call out functionlity offered by these crates that may be appealing for uom-intervals.  I'll reach out to the listed crate owners and gather their feedback before moving forward on uom-intervals.
 
-[Honest Intervals](https://crates.io/crates/honestintervals)
-
-[Interval](https://crates.io/crates/interval)
-
 [Interval Arithmetic Library](https://crates.io/crates/intervallum) - Support for exclusively Closed Bounded intervals, Singleton and Empty (via IsSingleton, IsEmpty).  Supports primitive types only for Bounds (no uom support). Approximates unbounded intervals with bounds at sentinal values pulled from the primitive Bound extremum (e.g. -128 for i8 -> [inf).
+
+[Interval](https://crates.io/crates/interval) - Abandoned at 0.0.1
 
 ### Existing Libraries from Other Languages
 
