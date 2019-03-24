@@ -68,8 +68,6 @@ From these, many useful utilities can be derived.  Several examples follow:
 
 Intervals are represented by an Enum, representing all combinations of open, closed, and half-open intervals and their ray variants (one bound at +/- inf).  See the alternative discussion [below](#alternative-representation-of-interval-bound-types) for evaluation of a representation in which Intervals contain a Left and Right Bound Enum instead.
 
-Nomenclature below is pulled from [proofwiki:Real Interval Types](https://proofwiki.org/wiki/Definition:Real_Interval_Types).
-
 For Intervals containing bounded left and right extents, a design challenge arrises in the handling of the bound parameters - specifically the interaction of the left and right bound values which are expected to have a specific ordering depending upon Interval type.  In order to enable Interval representation and construction by simple enum, Intervals with left and right bounded values will first construct a BoundPair<T> struct (with BoundPair::new() - returning a Result that can be error checked).  Therefore an invalid Interval enum cannot be constructed.
 
 ```rust
@@ -80,22 +78,22 @@ pub struct BoundPair<T> {
 }
 ```
 
-Then the Interval enum variants are defined as follows:
+Interval enum variant nomenclature is pulled from [proofwiki:Real Interval Types](https://proofwiki.org/wiki/Definition:Real_Interval_Types):
 
 ```rust
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Interval<T> {
-    ClosedBounded { bound_pair: BoundPair<T> },       // [a, b]
-    OpenBounded { bound_pair: BoundPair<T> },         // (a, b)
-    LeftHalfOpenBounded { bound_pair: BoundPair<T> }, // (a, b]
-    RightHalfOpenBounded { bound_pair: BoundPair<T> }, // [a, b)
-    ClosedBoundedRight { right: T },                  // (-inf, a]
-    OpenBoundedRight { right: T },                    // (-inf, a)
-    ClosedBoundedLeft { left: T },                    // [a, inf)
-    OpenBoundedLeft { left: T },                      // (a, inf)
-    Singleton { at: T },                              // [a]
-    Unbounded,                                        // (-inf, inf)
-    Empty,                                            // Empty Interval
+    Closed { bound_pair: BoundPair<T> },        // [a, b]
+    Open { bound_pair: BoundPair<T> },          // (a, b)
+    LeftHalfOpen { bound_pair: BoundPair<T> },  // (a, b]
+    RightHalfOpen { bound_pair: BoundPair<T> }, // [a, b)
+    UnboundedClosedRight { right: T },          // (-inf, a]
+    UnboundedOpenRight { right: T },            // (-inf, a)
+    UnboundedClosedLeft { left: T },            // [a, inf)
+    UnboundedOpenLeft { left: T },              // (a, inf)
+    Singleton { at: T },                        // [a]
+    Unbounded,                                  // (-inf, inf)
+    Empty,                                      // Empty Interval
 }
 ```
 
