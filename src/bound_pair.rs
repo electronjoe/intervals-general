@@ -1,8 +1,8 @@
-/// A BoundPair represents valid lower and upper Interval bounds
+/// A BoundPair represents valid left and right Interval bounds
 ///
 /// For Intervals containing finite bounds, the BoundPair construction
-/// ensures well-formed lower and upper bounds prior to Interval enum
-/// construction (e.g. lower < upper).
+/// ensures well-formed left and right bounds prior to Interval enum
+/// construction (e.g. left < right).
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct BoundPair<T> {
     left: T,
