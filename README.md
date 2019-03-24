@@ -1,7 +1,7 @@
 # intervals-general Crate RFC
 
 * Start Date Oct 13, 2018
-* Last Edit Nov 11, 2018
+* Last Edit Mar 24, 2019
 * Work in Progress
 * Scott Moeller
 
@@ -78,7 +78,7 @@ pub struct BoundPair<T> {
 }
 ```
 
-Interval enum variant nomenclature is pulled from [proofwiki:Real Interval Types](https://proofwiki.org/wiki/Definition:Real_Interval_Types):
+Interval enum variant taxonomy is pulled from [proofwiki:Real Interval Types](https://proofwiki.org/wiki/Definition:Real_Interval_Types):
 
 ```rust
 #[derive(Debug, Copy, Clone, PartialEq)]
