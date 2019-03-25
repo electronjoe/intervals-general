@@ -7,8 +7,7 @@
 //! use intervals_general::interval::Interval;
 //! # fn main() -> std::result::Result<(), String> {
 //! let bounds = BoundPair::new(1.0, 2.0).ok_or("invalid BoundPair")?;
-//! let right_half_open =
-//!   Interval::RightHalfOpen{ bound_pair: bounds };  // [1.0, 2.0)
+//! let right_half_open = Interval::RightHalfOpen { bound_pair: bounds }; // [1.0, 2.0)
 //! # Ok(())
 //! # }
 //! ```
@@ -28,7 +27,6 @@
 //! 1. No use of of panic, assert
 //! 1. Minimize error handling by design
 //! 1. Make the library hard to use incorrectly
-//!
 pub mod bound_pair;
 pub mod interval;
 

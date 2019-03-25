@@ -24,8 +24,7 @@ where
     /// use intervals_general::interval::Interval;
     /// # fn main() -> std::result::Result<(), String> {
     /// let bounds = BoundPair::new(1.0, 2.0).ok_or("invalid BoundPair")?;
-    /// let right_half_open =
-    ///   Interval::RightHalfOpen{ bound_pair: bounds };  // [1.0, 2.0)
+    /// let right_half_open = Interval::RightHalfOpen { bound_pair: bounds }; // [1.0, 2.0)
     /// # Ok(())
     /// # }
     /// ```
@@ -34,7 +33,7 @@ where
     ///
     /// ```
     /// use intervals_general::bound_pair::BoundPair;
-    /// assert_eq!(BoundPair::new(2,1), None);
+    /// assert_eq!(BoundPair::new(2, 1), None);
     /// assert_eq!(BoundPair::new(2.0, 2.0), None);
     /// ```
     pub fn new(left: T, right: T) -> Option<BoundPair<T>> {

@@ -15,7 +15,7 @@ use crate::bound_pair::BoundPair;
 /// * Singeleton -> `[a]`
 /// * Unbounded -> `(-inf, inf)`
 /// * Empty
-/// 
+///
 /// # Examples
 ///
 /// ```
@@ -23,8 +23,7 @@ use crate::bound_pair::BoundPair;
 /// use intervals_general::interval::Interval;
 /// # fn main() -> std::result::Result<(), String> {
 /// let bounds = BoundPair::new(1.0, 2.0).ok_or("invalid BoundPair")?;
-/// let right_half_open =
-///   Interval::RightHalfOpen{ bound_pair: bounds };  // [1.0, 2.0)
+/// let right_half_open = Interval::RightHalfOpen { bound_pair: bounds }; // [1.0, 2.0)
 /// # Ok(())
 /// # }
 /// ```
