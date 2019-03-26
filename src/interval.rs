@@ -43,21 +43,11 @@ pub enum Interval<T> {
 }
 
 // Internally used to simplify matching functions on Intervals
-// TODO(smoeller) do I need LeftBound and RightBound enums? Or just one.
-// TODO(smoeller) drop Bounded from variant names
-enum LeftBound<T> {
+enum Bound<T> {
     None,
     Unbounded,
-    OpenBounded(T),
-    ClosedBounded(T),
-}
-
-// Internally used to simplify matching functions on Intervals
-enum RightBound<T> {
-    None,
-    Unbounded,
-    OpenBounded(T),
-    ClosedBounded(T),
+    Open(T),
+    Closed(T),
 }
 
 impl<T> Interval<T>
@@ -114,23 +104,23 @@ where
 
         let left_contained = match (self_left_bound, other_left_bound) {
             // The Empty interval does not contain the Empty interval
-            (LeftBound::None, _) => false,
-            (_, LeftBound::None) => false,
+            (Bound::None, _) => false,
+            (_, Bound::None) => false,
             // If self left interval is unbounded, it will contain any other left bound
-            (LeftBound::Unbounded, _) => true,
+            (Bound::Unbounded, _) => true,
             // Given self left interval is not unbounded and right is unbounded, self cannot contain
             // other
-            (_, LeftBound::Unbounded) => false,
-            (LeftBound::ClosedBounded(ref self_val), LeftBound::ClosedBounded(ref other_val))
-            | (LeftBound::ClosedBounded(ref self_val), LeftBound::OpenBounded(ref other_val))
-            | (LeftBound::OpenBounded(ref self_val), LeftBound::OpenBounded(ref other_val)) => {
+            (_, Bound::Unbounded) => false,
+            (Bound::Closed(ref self_val), Bound::Closed(ref other_val))
+            | (Bound::Closed(ref self_val), Bound::Open(ref other_val))
+            | (Bound::Open(ref self_val), Bound::Open(ref other_val)) => {
                 if self_val <= other_val {
                     true
                 } else {
                     false
                 }
             }
-            (LeftBound::OpenBounded(ref self_val), LeftBound::ClosedBounded(ref other_val)) => {
+            (Bound::Open(ref self_val), Bound::Closed(ref other_val)) => {
                 if self_val < other_val {
                     true
                 } else {
@@ -141,23 +131,23 @@ where
 
         let right_contained = match (self_right_bound, other_right_bound) {
             // The Empty interval does not contain the Empty interval
-            (RightBound::None, _) => false,
-            (_, RightBound::None) => false,
+            (Bound::None, _) => false,
+            (_, Bound::None) => false,
             // If self left interval is unbounded, it will contain any other left bound
-            (RightBound::Unbounded, _) => true,
+            (Bound::Unbounded, _) => true,
             // Given self left interval is not unbounded and right is unbounded, self cannot contain
             // other
-            (_, RightBound::Unbounded) => false,
-            (RightBound::ClosedBounded(ref self_val), RightBound::ClosedBounded(ref other_val))
-            | (RightBound::ClosedBounded(ref self_val), RightBound::OpenBounded(ref other_val))
-            | (RightBound::OpenBounded(ref self_val), RightBound::OpenBounded(ref other_val)) => {
+            (_, Bound::Unbounded) => false,
+            (Bound::Closed(ref self_val), Bound::Closed(ref other_val))
+            | (Bound::Closed(ref self_val), Bound::Open(ref other_val))
+            | (Bound::Open(ref self_val), Bound::Open(ref other_val)) => {
                 if self_val >= other_val {
                     true
                 } else {
                     false
                 }
             }
-            (RightBound::OpenBounded(ref self_val), RightBound::ClosedBounded(ref other_val)) => {
+            (Bound::Open(ref self_val), Bound::Closed(ref other_val)) => {
                 if self_val > other_val {
                     true
                 } else {
@@ -169,14 +159,14 @@ where
         left_contained && right_contained
     }
 
-    fn to_left_bound(&self) -> LeftBound<T> {
+    fn to_left_bound(&self) -> Bound<T> {
         match self {
-            Interval::Empty => LeftBound::None,
-            Interval::Singleton { ref at } => LeftBound::ClosedBounded(*at),
+            Interval::Empty => Bound::None,
+            Interval::Singleton { ref at } => Bound::Closed(*at),
             // The cases where left bound of self is open -inf
             Interval::Unbounded
             | Interval::UnboundedClosedRight { .. }
-            | Interval::UnboundedOpenRight { .. } => LeftBound::Unbounded,
+            | Interval::UnboundedOpenRight { .. } => Bound::Unbounded,
             // The cases where left bound of self is Closed and Bounded
             Interval::Closed {
                 bound_pair: BoundPair { ref left, .. },
@@ -184,7 +174,7 @@ where
             | Interval::RightHalfOpen {
                 bound_pair: BoundPair { ref left, .. },
             }
-            | Interval::UnboundedClosedLeft { ref left, .. } => LeftBound::ClosedBounded(*left),
+            | Interval::UnboundedClosedLeft { ref left, .. } => Bound::Closed(*left),
             // The cases where left bound of self is Open and Bounded
             Interval::Open {
                 bound_pair: BoundPair { ref left, .. },
@@ -192,18 +182,18 @@ where
             | Interval::LeftHalfOpen {
                 bound_pair: BoundPair { ref left, .. },
             }
-            | Interval::UnboundedOpenLeft { ref left, .. } => LeftBound::OpenBounded(*left),
+            | Interval::UnboundedOpenLeft { ref left, .. } => Bound::Open(*left),
         }
     }
 
-    fn to_right_bound(&self) -> RightBound<T> {
+    fn to_right_bound(&self) -> Bound<T> {
         match self {
-            Interval::Empty => RightBound::None,
-            Interval::Singleton { ref at } => RightBound::ClosedBounded(*at),
+            Interval::Empty => Bound::None,
+            Interval::Singleton { ref at } => Bound::Closed(*at),
             // The cases where right bound of self is open +inf
             Interval::Unbounded
             | Interval::UnboundedClosedLeft { .. }
-            | Interval::UnboundedOpenLeft { .. } => RightBound::Unbounded,
+            | Interval::UnboundedOpenLeft { .. } => Bound::Unbounded,
             // The cases where right bound of self is Closed and Bounded
             Interval::Closed {
                 bound_pair: BoundPair { ref right, .. },
@@ -211,9 +201,7 @@ where
             | Interval::LeftHalfOpen {
                 bound_pair: BoundPair { ref right, .. },
             }
-            | Interval::UnboundedClosedRight { ref right, .. } => {
-                RightBound::ClosedBounded(*right)
-            }
+            | Interval::UnboundedClosedRight { ref right, .. } => Bound::Closed(*right),
             // The cases where right bound of self is Open and Bounded
             Interval::Open {
                 bound_pair: BoundPair { ref right, .. },
@@ -221,7 +209,7 @@ where
             | Interval::RightHalfOpen {
                 bound_pair: BoundPair { ref right, .. },
             }
-            | Interval::UnboundedOpenRight { ref right, .. } => RightBound::OpenBounded(*right),
+            | Interval::UnboundedOpenRight { ref right, .. } => Bound::Open(*right),
         }
     }
 }
