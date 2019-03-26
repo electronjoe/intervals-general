@@ -103,9 +103,10 @@ where
         let other_left_bound = other.to_left_bound();
 
         let left_contained = match (self_left_bound, other_left_bound) {
-            // The Empty interval does not contain the Empty interval
+            // The Empty Interval contains no other Intervals (even Empty)
             (Bound::None, _) => false,
-            (_, Bound::None) => false,
+            // The Empty interval is contained in all non-Empty Intervals
+            (_, Bound::None) => true,
             // If self left interval is unbounded, it will contain any other left bound
             (Bound::Unbounded, _) => true,
             // Given self left interval is not unbounded and right is unbounded, self cannot contain
