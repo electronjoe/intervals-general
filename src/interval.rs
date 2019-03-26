@@ -1,4 +1,5 @@
 use crate::bound_pair::BoundPair;
+use std::cmp::Ordering;
 
 /// Interval enum capable of general interval representation
 ///
@@ -211,6 +212,154 @@ where
                 bound_pair: BoundPair { ref right, .. },
             }
             | Interval::UnboundedOpenRight { ref right, .. } => Bound::Open(*right),
+        }
+    }
+
+    /// The PartialOrd::partial_cmp implementation for left Bounds
+    ///
+    /// Though Intervals on some generics (e.g. integers) can supply [Ord](https://doc.rust-lang.org/std/cmp/trait.Ord.html) because they form a [total order](https://en.wikipedia.org/wiki/Total_order),
+    /// unfortunately our floating point implementations break such properties.
+    /// Therefore the best we can do under some generics is satisfy [PartialOrd](https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use intervals_general::bound_pair::BoundPair;
+    /// use intervals_general::interval::Interval;
+    /// use std::cmp::Ordering;
+    /// # fn main() -> std::result::Result<(), String> {
+    /// let right_half_open = Interval::RightHalfOpen {
+    ///     bound_pair: BoundPair::new(1.0, 5.0).ok_or("invalid BoundPair")?,
+    /// };
+    /// let contained_interval = Interval::Open {
+    ///     bound_pair: BoundPair::new(1.0, 2.0).ok_or("invalid BoundPair")?,
+    /// };
+    /// assert_eq!(
+    ///     contained_interval.left_partial_cmp(&right_half_open),
+    ///     Some(Ordering::Greater)
+    /// );
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn left_partial_cmp(&self, other: &Interval<T>) -> Option<Ordering> {
+        let self_left_bound = self.to_left_bound();
+        let other_left_bound = other.to_left_bound();
+
+        match (self_left_bound, other_left_bound) {
+            (Bound::None, _) => None,
+            (_, Bound::None) => None,
+            // Handle all cases in which one left bound is Unbounded
+            (Bound::Unbounded, Bound::Unbounded) => Some(Ordering::Equal),
+            (Bound::Unbounded, _) => Some(Ordering::Less),
+            (_, Bound::Unbounded) => Some(Ordering::Greater),
+            // The cases where left bound of self is Closed and Bounded
+            (Bound::Closed(self_val), Bound::Closed(other_val)) => {
+                if self_val < other_val {
+                    Some(Ordering::Less)
+                } else if self_val > other_val {
+                    Some(Ordering::Greater)
+                } else {
+                    Some(Ordering::Equal)
+                }
+            }
+            (Bound::Closed(self_val), Bound::Open(other_val)) => {
+                if self_val <= other_val {
+                    Some(Ordering::Less)
+                } else {
+                    Some(Ordering::Greater)
+                }
+            }
+            // The cases where left bound of self is Open and Bounded
+            (Bound::Open(self_val), Bound::Closed(other_val)) => {
+                if self_val < other_val {
+                    Some(Ordering::Less)
+                } else {
+                    Some(Ordering::Greater)
+                }
+            }
+            (Bound::Open(self_val), Bound::Open(other_val)) => {
+                if self_val < other_val {
+                    Some(Ordering::Less)
+                } else if self_val > other_val {
+                    Some(Ordering::Greater)
+                } else {
+                    Some(Ordering::Equal)
+                }
+            }
+        }
+    }
+
+    /// The PartialOrd::partial_cmp implementation for right Bounds
+    ///
+    /// Though Intervals on some generics (e.g. integers) can supply [Ord](https://doc.rust-lang.org/std/cmp/trait.Ord.html) because they form a [total order](https://en.wikipedia.org/wiki/Total_order),
+    /// unfortunately our floating point implementations break such properties.
+    /// Therefore the best we can do under some generics is satisfy [PartialOrd](https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use intervals_general::bound_pair::BoundPair;
+    /// use intervals_general::interval::Interval;
+    /// use std::cmp::Ordering;
+    /// # fn main() -> std::result::Result<(), String> {
+    /// let right_half_open = Interval::RightHalfOpen {
+    ///     bound_pair: BoundPair::new(1.0, 5.0).ok_or("invalid BoundPair")?,
+    /// };
+    /// let contained_interval = Interval::Open {
+    ///     bound_pair: BoundPair::new(1.0, 2.0).ok_or("invalid BoundPair")?,
+    /// };
+    /// assert_eq!(
+    ///     contained_interval.right_partial_cmp(&right_half_open),
+    ///     Some(Ordering::Less)
+    /// );
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn right_partial_cmp(&self, other: &Interval<T>) -> Option<Ordering> {
+        let self_right_bound = self.to_right_bound();
+        let other_right_bound = other.to_right_bound();
+
+        match (self_right_bound, other_right_bound) {
+            (Bound::None, _) => None,
+            (_, Bound::None) => None,
+            // Handle all cases in which one right bound is Unbounded
+            (Bound::Unbounded, Bound::Unbounded) => Some(Ordering::Equal),
+            (Bound::Unbounded, _) => Some(Ordering::Greater),
+            (_, Bound::Unbounded) => Some(Ordering::Less),
+            // The cases where right bound of self is Closed and Bounded
+            (Bound::Closed(self_val), Bound::Closed(other_val)) => {
+                if self_val < other_val {
+                    Some(Ordering::Less)
+                } else if self_val > other_val {
+                    Some(Ordering::Greater)
+                } else {
+                    Some(Ordering::Equal)
+                }
+            }
+            (Bound::Closed(self_val), Bound::Open(other_val)) => {
+                if self_val < other_val {
+                    Some(Ordering::Less)
+                } else {
+                    Some(Ordering::Greater)
+                }
+            }
+            // The cases where right bound of self is Open and Bounded
+            (Bound::Open(self_val), Bound::Closed(other_val)) => {
+                if self_val <= other_val {
+                    Some(Ordering::Less)
+                } else {
+                    Some(Ordering::Greater)
+                }
+            }
+            (Bound::Open(self_val), Bound::Open(other_val)) => {
+                if self_val < other_val {
+                    Some(Ordering::Less)
+                } else if self_val > other_val {
+                    Some(Ordering::Greater)
+                } else {
+                    Some(Ordering::Equal)
+                }
+            }
         }
     }
 }
