@@ -5,8 +5,8 @@
 /// construction (e.g. left < right).
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct BoundPair<T> {
-    left: T,
-    right: T,
+    pub(crate) left: T,
+    pub(crate) right: T,
 }
 
 impl<T> BoundPair<T>
