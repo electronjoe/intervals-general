@@ -465,7 +465,9 @@ where
     /// TODO How to handle overflow detection? I do not have access to check_sub
     /// due to generic? Presently for interval widths exceeding the Boundary
     /// type representation, panic occurs in debug mode and wrapping occurs
-    /// in production mode. # Examples
+    /// in production mode.
+    /// 
+    /// # Examples
     ///
     /// ```
     /// use intervals_general::bound_pair::BoundPair;
