@@ -161,6 +161,98 @@ where
         left_contained && right_contained
     }
 
+    /// Intersect an with the specified Interval
+    ///
+    /// Take the intersection of self with the specified Interval.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use intervals_general::bound_pair::BoundPair;
+    /// use intervals_general::interval::Interval;
+    /// 
+    /// # fn main() -> std::result::Result<(), String> {
+    /// let i1 = Interval::RightHalfOpen {
+    ///     bound_pair: BoundPair::new(1, 5).ok_or("invalid BoundPair")?,
+    /// };
+    /// let i2 = Interval::Open {
+    ///     bound_pair: BoundPair::new(-1, 2).ok_or("invalid BoundPair")?,
+    /// };
+    /// 
+    /// assert_eq!(
+    ///     i1.intersect(&i2),
+    ///     Interval::RightHalfOpen {
+    ///         bound_pair: BoundPair::new(1, 2).ok_or("invalid BoundPair")?
+    ///     }
+    /// );
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn intersect(&self, other: &Interval<T>) -> Interval<T> {
+        let left_cmp_partial = self.left_partial_cmp(&other);
+        let right_cmp_partial = self.right_partial_cmp(&other);
+        if left_cmp_partial.is_none() || right_cmp_partial.is_none() {
+            return Interval::Empty;
+        }
+
+        let left_bound = if left_cmp_partial != Some(Ordering::Less) {
+            self.to_left_bound()
+        } else {
+            other.to_left_bound()
+        };
+        let right_bound = if right_cmp_partial != Some(Ordering::Greater) {
+            self.to_right_bound()
+        } else {
+            other.to_right_bound()
+        };
+
+        match (left_bound, right_bound) {
+            (Bound::None, _) => Interval::Empty,
+            (_, Bound::None) => Interval::Empty,
+            (Bound::Closed(left), Bound::Closed(right)) => {
+                if left > right {
+                    Interval::Empty
+                } else {
+                    Interval::Closed {
+                        bound_pair: BoundPair { left, right },
+                    }
+                }
+            }
+            (Bound::Open(left), Bound::Open(right)) => {
+                if left >= right {
+                    Interval::Empty
+                } else {
+                    Interval::Open {
+                        bound_pair: BoundPair { left, right },
+                    }
+                }
+            }
+            (Bound::Open(left), Bound::Closed(right)) => {
+                if left >= right {
+                    Interval::Empty
+                } else {
+                    Interval::LeftHalfOpen {
+                        bound_pair: BoundPair { left, right },
+                    }
+                }
+            }
+            (Bound::Closed(left), Bound::Open(right)) => {
+                if left >= right {
+                    Interval::Empty
+                } else {
+                    Interval::RightHalfOpen {
+                        bound_pair: BoundPair { left, right },
+                    }
+                }
+            }
+            (Bound::Unbounded, Bound::Closed(right)) => Interval::UnboundedClosedRight { right },
+            (Bound::Unbounded, Bound::Open(right)) => Interval::UnboundedOpenRight { right },
+            (Bound::Closed(left), Bound::Unbounded) => Interval::UnboundedClosedLeft { left },
+            (Bound::Open(left), Bound::Unbounded) => Interval::UnboundedOpenLeft { left },
+            (Bound::Unbounded, Bound::Unbounded) => Interval::Unbounded,
+        }
+    }
+
     fn to_left_bound(&self) -> Bound<T> {
         match self {
             Interval::Empty => Bound::None,
@@ -227,6 +319,7 @@ where
     /// use intervals_general::bound_pair::BoundPair;
     /// use intervals_general::interval::Interval;
     /// use std::cmp::Ordering;
+    /// 
     /// # fn main() -> std::result::Result<(), String> {
     /// let right_half_open = Interval::RightHalfOpen {
     ///     bound_pair: BoundPair::new(1.0, 5.0).ok_or("invalid BoundPair")?,
@@ -234,6 +327,7 @@ where
     /// let contained_interval = Interval::Open {
     ///     bound_pair: BoundPair::new(1.0, 2.0).ok_or("invalid BoundPair")?,
     /// };
+    /// 
     /// assert_eq!(
     ///     contained_interval.left_partial_cmp(&right_half_open),
     ///     Some(Ordering::Greater)
@@ -301,6 +395,7 @@ where
     /// use intervals_general::bound_pair::BoundPair;
     /// use intervals_general::interval::Interval;
     /// use std::cmp::Ordering;
+    /// 
     /// # fn main() -> std::result::Result<(), String> {
     /// let right_half_open = Interval::RightHalfOpen {
     ///     bound_pair: BoundPair::new(1.0, 5.0).ok_or("invalid BoundPair")?,
@@ -308,6 +403,7 @@ where
     /// let contained_interval = Interval::Open {
     ///     bound_pair: BoundPair::new(1.0, 2.0).ok_or("invalid BoundPair")?,
     /// };
+    /// 
     /// assert_eq!(
     ///     contained_interval.right_partial_cmp(&right_half_open),
     ///     Some(Ordering::Less)
