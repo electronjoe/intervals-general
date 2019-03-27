@@ -34,11 +34,3 @@
 //! 1. Make the library hard to use incorrectly
 pub mod bound_pair;
 pub mod interval;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
