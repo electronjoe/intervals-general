@@ -458,4 +458,42 @@ where
             }
         }
     }
+
+    /// Compute the width of the interval
+    ///
+    /// Returns right - left bound, so long as finite, else None
+    /// TODO How to handle overflow detection? I do not have access to check_sub
+    /// due to generic? Presently for interval widths exceeding the Boundary
+    /// type representation, panic occurs in debug mode and wrapping occurs
+    /// in production mode. # Examples
+    ///
+    /// ```
+    /// use intervals_general::bound_pair::BoundPair;
+    /// use intervals_general::interval::Interval;
+    ///
+    /// # fn main() -> std::result::Result<(), String> {
+    /// let interval = Interval::RightHalfOpen {
+    ///     bound_pair: BoundPair::new(1, 5).ok_or("invalid BoundPair")?,
+    /// };
+    ///
+    /// let width: i32 = interval.width().ok_or("width was None")?;
+    /// assert_eq!(width, 4);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn width(&self) -> Option<<T as std::ops::Sub>::Output> {
+        let self_left_bound = self.to_left_bound();
+        let self_right_bound = self.to_right_bound();
+
+        match (self_left_bound, self_right_bound) {
+            (Bound::None, _) => None,
+            (_, Bound::None) => None,
+            (Bound::Unbounded, _) => None,
+            (_, Bound::Unbounded) => None,
+            (Bound::Closed(left), Bound::Closed(right)) => Some(right - left),
+            (Bound::Closed(left), Bound::Open(right)) => Some(right - left),
+            (Bound::Open(left), Bound::Closed(right)) => Some(right - left),
+            (Bound::Open(left), Bound::Open(right)) => Some(right - left),
+        }
+    }
 }
