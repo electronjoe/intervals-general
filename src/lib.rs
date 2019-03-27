@@ -1,4 +1,9 @@
-//! This crate does stuff
+//! This crate enables generalized Interval representation and operations
+//!
+//! Supporting generic bound data types (e.g. compatible with units-of-measure
+//! to enable typechecked physical units) - and supporting all necessary
+//! Interval representations for closure of interval operations.  See README.md
+//! for detailed design discussion.
 //!
 //! ## Examples
 //!

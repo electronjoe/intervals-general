@@ -170,7 +170,7 @@ where
     /// ```
     /// use intervals_general::bound_pair::BoundPair;
     /// use intervals_general::interval::Interval;
-    /// 
+    ///
     /// # fn main() -> std::result::Result<(), String> {
     /// let i1 = Interval::RightHalfOpen {
     ///     bound_pair: BoundPair::new(1, 5).ok_or("invalid BoundPair")?,
@@ -178,7 +178,7 @@ where
     /// let i2 = Interval::Open {
     ///     bound_pair: BoundPair::new(-1, 2).ok_or("invalid BoundPair")?,
     /// };
-    /// 
+    ///
     /// assert_eq!(
     ///     i1.intersect(&i2),
     ///     Interval::RightHalfOpen {
@@ -319,7 +319,7 @@ where
     /// use intervals_general::bound_pair::BoundPair;
     /// use intervals_general::interval::Interval;
     /// use std::cmp::Ordering;
-    /// 
+    ///
     /// # fn main() -> std::result::Result<(), String> {
     /// let right_half_open = Interval::RightHalfOpen {
     ///     bound_pair: BoundPair::new(1.0, 5.0).ok_or("invalid BoundPair")?,
@@ -327,7 +327,7 @@ where
     /// let contained_interval = Interval::Open {
     ///     bound_pair: BoundPair::new(1.0, 2.0).ok_or("invalid BoundPair")?,
     /// };
-    /// 
+    ///
     /// assert_eq!(
     ///     contained_interval.left_partial_cmp(&right_half_open),
     ///     Some(Ordering::Greater)
@@ -395,7 +395,7 @@ where
     /// use intervals_general::bound_pair::BoundPair;
     /// use intervals_general::interval::Interval;
     /// use std::cmp::Ordering;
-    /// 
+    ///
     /// # fn main() -> std::result::Result<(), String> {
     /// let right_half_open = Interval::RightHalfOpen {
     ///     bound_pair: BoundPair::new(1.0, 5.0).ok_or("invalid BoundPair")?,
@@ -403,7 +403,7 @@ where
     /// let contained_interval = Interval::Open {
     ///     bound_pair: BoundPair::new(1.0, 2.0).ok_or("invalid BoundPair")?,
     /// };
-    /// 
+    ///
     /// assert_eq!(
     ///     contained_interval.right_partial_cmp(&right_half_open),
     ///     Some(Ordering::Less)
