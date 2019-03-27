@@ -497,3 +497,49 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod interval_tests {
+    use crate::bound_pair::BoundPair;
+    use crate::interval::Interval;
+    use quickcheck::TestResult;
+    use quickcheck_macros::quickcheck;
+
+    #[quickcheck]
+    fn intersect_strictly_shrinks_u32(l1: u32, l2: u32, r1: u32, r2: u32) -> TestResult {
+        if let (Some(bp1), Some(bp2)) = (BoundPair::new(l1, r1), BoundPair::new(l2, r2)) {
+            let i1 = Interval::LeftHalfOpen { bound_pair: bp1 };
+            let i2 = Interval::LeftHalfOpen { bound_pair: bp2 };
+            let intersection = i1.intersect(&i2);
+            if intersection.width() > i1.width() {
+                TestResult::from_bool(false)
+            } else if intersection.width() > i2.width() {
+                TestResult::from_bool(false)
+            } else {
+                TestResult::from_bool(true)
+            }
+        } else {
+            // Discard invalid randomly generated intervals
+            TestResult::discard()
+        }
+    }
+
+    #[quickcheck]
+    fn intersect_strictly_shrinks_f32(l1: f32, l2: f32, r1: f32, r2: f32) -> TestResult {
+        if let (Some(bp1), Some(bp2)) = (BoundPair::new(l1, r1), BoundPair::new(l2, r2)) {
+            let i1 = Interval::LeftHalfOpen { bound_pair: bp1 };
+            let i2 = Interval::LeftHalfOpen { bound_pair: bp2 };
+            let intersection = i1.intersect(&i2);
+            if intersection.width() > i1.width() {
+                TestResult::from_bool(false)
+            } else if intersection.width() > i2.width() {
+                TestResult::from_bool(false)
+            } else {
+                TestResult::from_bool(true)
+            }
+        } else {
+            // Discard invalid randomly generated intervals
+            TestResult::discard()
+        }
+    }
+}
