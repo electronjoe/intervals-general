@@ -466,7 +466,7 @@ where
     /// due to generic? Presently for interval widths exceeding the Boundary
     /// type representation, panic occurs in debug mode and wrapping occurs
     /// in production mode.
-    /// 
+    ///
     /// # Examples
     ///
     /// ```

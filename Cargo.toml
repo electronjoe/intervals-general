@@ -7,5 +7,17 @@ edition = "2018"
 [dependencies]
 
 [dev-dependencies]
+criterion = { version = "0.2", features=['real_blackbox'] }
 quickcheck = "0.8"
 quickcheck_macros = "0.8"
+
+[[bench]]
+name = "static_alternative"
+harness = false
+
+[[bench]]
+name = "interval_operations"
+harness = false
+
+[profile.bench]
+lto = true  # Critical for performance (87% reduction of e.g. intersect)
