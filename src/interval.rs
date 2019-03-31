@@ -489,9 +489,7 @@ mod interval_tests {
             let i1 = Interval::LeftHalfOpen { bound_pair: bp1 };
             let i2 = Interval::LeftHalfOpen { bound_pair: bp2 };
             let intersection = i1.intersect(&i2);
-            if intersection.width() > i1.width() {
-                TestResult::from_bool(false)
-            } else if intersection.width() > i2.width() {
+            if (intersection.width() > i1.width()) | (intersection.width() > i2.width()) {
                 TestResult::from_bool(false)
             } else {
                 TestResult::from_bool(true)
@@ -508,9 +506,7 @@ mod interval_tests {
             let i1 = Interval::LeftHalfOpen { bound_pair: bp1 };
             let i2 = Interval::LeftHalfOpen { bound_pair: bp2 };
             let intersection = i1.intersect(&i2);
-            if intersection.width() > i1.width() {
-                TestResult::from_bool(false)
-            } else if intersection.width() > i2.width() {
+            if (intersection.width() > i1.width()) | (intersection.width() > i2.width()) {
                 TestResult::from_bool(false)
             } else {
                 TestResult::from_bool(true)
