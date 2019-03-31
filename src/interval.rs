@@ -476,6 +476,96 @@ where
     }
 }
 
+/// Implement the Display trait for Intervals
+///
+/// Here I uses [Wirth Interval Notation](https://proofwiki.org/wiki/Mathematician:Niklaus_Emil_Wirth).
+///
+/// # Examples
+///
+/// ```
+/// use intervals_general::bound_pair::BoundPair;
+/// use intervals_general::interval::Interval;
+///
+/// # fn main() -> std::result::Result<(), String> {
+/// let bp = BoundPair::new(1, 5).ok_or("invalid BoundPair")?;
+///
+/// assert_eq!(format!("{}", Interval::Closed { bound_pair: bp }), "[1..5]");
+/// assert_eq!(format!("{}", Interval::Open { bound_pair: bp }), "(1..5)");
+/// assert_eq!(
+///     format!("{}", Interval::LeftHalfOpen { bound_pair: bp }),
+///     "(1..5]"
+/// );
+/// assert_eq!(
+///     format!("{}", Interval::RightHalfOpen { bound_pair: bp }),
+///     "[1..5)"
+/// );
+/// assert_eq!(
+///     format!("{}", Interval::UnboundedClosedRight { right: 5 }),
+///     "(←..5]"
+/// );
+/// assert_eq!(
+///     format!("{}", Interval::UnboundedOpenRight { right: 5 }),
+///     "(←..5)"
+/// );
+/// assert_eq!(
+///     format!("{}", Interval::UnboundedClosedLeft { left: 1 }),
+///     "[1..→)"
+/// );
+/// assert_eq!(
+///     format!("{}", Interval::UnboundedOpenLeft { left: 1 }),
+///     "(1..→)"
+/// );
+/// assert_eq!(format!("{}", Interval::Singleton { at: 3.0 }), "[3.0]");
+/// assert_eq!(format!("{}", Interval::Unbounded::<u32> {}), "(←..→)");
+/// assert_eq!(format!("{}", Interval::Empty::<u32> {}), "Empty");
+/// # Ok(())
+/// # }
+/// ```
+impl<T> std::fmt::Display for Interval<T>
+where
+    T: std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            &Interval::Closed {
+                bound_pair:
+                    BoundPair {
+                        ref left,
+                        ref right,
+                    },
+            } => write!(f, "[{:?}..{:?}]", left, right),
+            &Interval::Open {
+                bound_pair:
+                    BoundPair {
+                        ref left,
+                        ref right,
+                    },
+            } => write!(f, "({:?}..{:?})", left, right),
+            &Interval::LeftHalfOpen {
+                bound_pair:
+                    BoundPair {
+                        ref left,
+                        ref right,
+                    },
+            } => write!(f, "({:?}..{:?}]", left, right),
+            &Interval::RightHalfOpen {
+                bound_pair:
+                    BoundPair {
+                        ref left,
+                        ref right,
+                    },
+            } => write!(f, "[{:?}..{:?})", left, right),
+            &Interval::UnboundedClosedRight { ref right } => write!(f, "({}..{:?}]", "←", right),
+            &Interval::UnboundedOpenRight { ref right } => write!(f, "({}..{:?})", "←", right),
+            &Interval::UnboundedClosedLeft { ref left } => write!(f, "[{:?}..{})", left, "→"),
+            &Interval::UnboundedOpenLeft { ref left } => write!(f, "({:?}..{})", left, "→"),
+            &Interval::Singleton { ref at } => write!(f, "[{:?}]", at),
+            &Interval::Unbounded => write!(f, "({}..{})", "←", "→"),
+            &Interval::Empty => write!(f, "Empty"),
+        }
+    }
+}
+
 #[cfg(test)]
 mod interval_tests {
     use crate::bound_pair::BoundPair;
