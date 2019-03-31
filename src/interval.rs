@@ -115,20 +115,8 @@ where
             (_, Bound::Unbounded) => false,
             (Bound::Closed(ref self_val), Bound::Closed(ref other_val))
             | (Bound::Closed(ref self_val), Bound::Open(ref other_val))
-            | (Bound::Open(ref self_val), Bound::Open(ref other_val)) => {
-                if self_val <= other_val {
-                    true
-                } else {
-                    false
-                }
-            }
-            (Bound::Open(ref self_val), Bound::Closed(ref other_val)) => {
-                if self_val < other_val {
-                    true
-                } else {
-                    false
-                }
-            }
+            | (Bound::Open(ref self_val), Bound::Open(ref other_val)) => self_val <= other_val,
+            (Bound::Open(ref self_val), Bound::Closed(ref other_val)) => self_val < other_val,
         };
 
         let right_contained = match (self_right_bound, other_right_bound) {
@@ -142,20 +130,8 @@ where
             (_, Bound::Unbounded) => false,
             (Bound::Closed(ref self_val), Bound::Closed(ref other_val))
             | (Bound::Closed(ref self_val), Bound::Open(ref other_val))
-            | (Bound::Open(ref self_val), Bound::Open(ref other_val)) => {
-                if self_val >= other_val {
-                    true
-                } else {
-                    false
-                }
-            }
-            (Bound::Open(ref self_val), Bound::Closed(ref other_val)) => {
-                if self_val > other_val {
-                    true
-                } else {
-                    false
-                }
-            }
+            | (Bound::Open(ref self_val), Bound::Open(ref other_val)) => self_val >= other_val,
+            (Bound::Open(ref self_val), Bound::Closed(ref other_val)) => self_val > other_val,
         };
 
         left_contained && right_contained

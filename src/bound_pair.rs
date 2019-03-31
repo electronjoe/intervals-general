@@ -38,9 +38,9 @@ where
     /// ```
     pub fn new(left: T, right: T) -> Option<BoundPair<T>> {
         if left >= right {
-            return None;
+            None
         } else {
-            return Some(BoundPair { left, right });
+            Some(BoundPair { left, right })
         }
     }
 }
