@@ -1,0 +1,59 @@
+language: rust
+cache:
+  directories:
+  - /home/travis/.cargo
+sudo: false
+
+rust:
+- 1.31.0    # Oldest supported
+- stable
+- beta
+- nightly
+os:
+- linux
+- osx
+- windows
+
+# Cribbed from UOM .travis.yml
+matrix:
+  allow_failures:
+  - rust: nightly
+  include:
+  - name: "Rust: 1.31.0"
+    rust: 1.31.0
+    script: |
+      cargo build --verbose
+  - name: "Rust: stable + tests"
+    rust: stable
+    script: |
+      cargo test --all --verbose
+  - name: Rustfmt
+    rust: 1.33.0
+    install:
+    - rustup component add rustfmt
+    script:
+    - cargo fmt -- --check
+  - name: Clippy
+    rust: 1.33.0
+    install:
+    - rustup component add clippy
+    script:
+    - RUSTFLAGS="-D warnings" cargo clippy --tests -- -D clippy::all
+  - name: Tarpaulin
+    rust: 1.33.0
+    sudo: required
+    script:
+    - docker run --security-opt seccomp=unconfined -v "$PWD:/volume" xd009642/tarpaulin sh -c "cargo build && cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID"
+
+install:
+- rustc -Vv
+- cargo -V
+
+script: |
+  set -e
+  cargo test --verbose
+before_cache:
+- rm -rf /home/travis/.cargo/registry
+
+notifications:
+  email:
