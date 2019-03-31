@@ -1,8 +1,4 @@
-#![feature(test)]
-extern crate test;
-
 use criterion::{criterion_group, criterion_main, Criterion};
-use test::black_box;
 
 mod static_alternative {
     pub struct LeftHalfOpen<T> {
@@ -36,18 +32,16 @@ mod static_alternative {
 }
 
 fn static_alternative(c: &mut Criterion) {
-   c.bench_function("static_alternative_u32_intersect", |b| {
+    c.bench_function("static_alternative_u32_intersect", |b| {
         b.iter(|| {
-            black_box(
-                static_alternative::LeftHalfOpen {
-                    left_bound: 20u32,
-                    right_bound: 30u32,
-                }
-                .intersect(&static_alternative::LeftHalfOpen {
-                    left_bound: 20u32,
-                    right_bound: 30u32,
-                }),
-            )
+            static_alternative::LeftHalfOpen {
+                left_bound: 20u32,
+                right_bound: 30u32,
+            }
+            .intersect(&static_alternative::LeftHalfOpen {
+                left_bound: 20u32,
+                right_bound: 30u32,
+            })
         })
     });
 }
