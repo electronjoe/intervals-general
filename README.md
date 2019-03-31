@@ -5,6 +5,9 @@
 * Work in Progress
 * Scott Moeller
 
+[![Travis](https://travis-ci.org/electronjoe/intervals-general.svg?branch=master)](https://travis-ci.org/electronjoe/intervals-general)
+[![Coveralls](https://coveralls.io/repos/github/electronjoe/intervals-general/badge.svg?branch=master)](https://coveralls.io/github/electronjoe/intervals-general?branch=master)
+
 ## Summary
 
 Addition of a new Crate named intervals-general which supports rigorous interval definitions (e.g. type-enforced representations of [all real interval types](https://proofwiki.org/wiki/Definition:Real_Interval_Types)), interval collections and common interval operations, all while operating over generic bound data types provided required traits are met (e.g. can use [units of measure](https://crates.io/crates/uom) as bounds).
