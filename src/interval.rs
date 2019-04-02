@@ -490,34 +490,10 @@ where
 /// let bp = BoundPair::new(1, 5).ok_or("invalid BoundPair")?;
 ///
 /// assert_eq!(format!("{}", Interval::Closed { bound_pair: bp }), "[1..5]");
-/// assert_eq!(format!("{}", Interval::Open { bound_pair: bp }), "(1..5)");
-/// assert_eq!(
-///     format!("{}", Interval::LeftHalfOpen { bound_pair: bp }),
-///     "(1..5]"
-/// );
-/// assert_eq!(
-///     format!("{}", Interval::RightHalfOpen { bound_pair: bp }),
-///     "[1..5)"
-/// );
-/// assert_eq!(
-///     format!("{}", Interval::UnboundedClosedRight { right: 5 }),
-///     "(←..5]"
-/// );
 /// assert_eq!(
 ///     format!("{}", Interval::UnboundedOpenRight { right: 5 }),
 ///     "(←..5)"
 /// );
-/// assert_eq!(
-///     format!("{}", Interval::UnboundedClosedLeft { left: 1 }),
-///     "[1..→)"
-/// );
-/// assert_eq!(
-///     format!("{}", Interval::UnboundedOpenLeft { left: 1 }),
-///     "(1..→)"
-/// );
-/// assert_eq!(format!("{}", Interval::Singleton { at: 3.0 }), "[3.0]");
-/// assert_eq!(format!("{}", Interval::Unbounded::<u32> {}), "(←..→)");
-/// assert_eq!(format!("{}", Interval::Empty::<u32> {}), "Empty");
 /// # Ok(())
 /// # }
 /// ```
@@ -567,11 +543,46 @@ where
 }
 
 #[cfg(test)]
-mod interval_tests {
+mod tests {
     use crate::bound_pair::BoundPair;
     use crate::interval::Interval;
     use quickcheck::TestResult;
     use quickcheck_macros::quickcheck;
+
+    #[test]
+    fn interval_display() {
+        let bp = BoundPair::new(1, 5).ok_or("invalid BoundPair").unwrap();
+
+        assert_eq!(format!("{}", Interval::Closed { bound_pair: bp }), "[1..5]");
+        assert_eq!(format!("{}", Interval::Open { bound_pair: bp }), "(1..5)");
+        assert_eq!(
+            format!("{}", Interval::LeftHalfOpen { bound_pair: bp }),
+            "(1..5]"
+        );
+        assert_eq!(
+            format!("{}", Interval::RightHalfOpen { bound_pair: bp }),
+            "[1..5)"
+        );
+        assert_eq!(
+            format!("{}", Interval::UnboundedClosedRight { right: 5 }),
+            "(←..5]"
+        );
+        assert_eq!(
+            format!("{}", Interval::UnboundedOpenRight { right: 5 }),
+            "(←..5)"
+        );
+        assert_eq!(
+            format!("{}", Interval::UnboundedClosedLeft { left: 1 }),
+            "[1..→)"
+        );
+        assert_eq!(
+            format!("{}", Interval::UnboundedOpenLeft { left: 1 }),
+            "(1..→)"
+        );
+        assert_eq!(format!("{}", Interval::Singleton { at: 3.0 }), "[3.0]");
+        assert_eq!(format!("{}", Interval::Unbounded::<u32> {}), "(←..→)");
+        assert_eq!(format!("{}", Interval::Empty::<u32> {}), "Empty");
+    }
 
     #[quickcheck]
     fn intersect_strictly_shrinks_u32(l1: u32, l2: u32, r1: u32, r2: u32) -> TestResult {
