@@ -527,41 +527,41 @@ where
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            &Interval::Closed {
+            Interval::Closed {
                 bound_pair:
                     BoundPair {
                         ref left,
                         ref right,
                     },
             } => write!(f, "[{:?}..{:?}]", left, right),
-            &Interval::Open {
+            Interval::Open {
                 bound_pair:
                     BoundPair {
                         ref left,
                         ref right,
                     },
             } => write!(f, "({:?}..{:?})", left, right),
-            &Interval::LeftHalfOpen {
+            Interval::LeftHalfOpen {
                 bound_pair:
                     BoundPair {
                         ref left,
                         ref right,
                     },
             } => write!(f, "({:?}..{:?}]", left, right),
-            &Interval::RightHalfOpen {
+            Interval::RightHalfOpen {
                 bound_pair:
                     BoundPair {
                         ref left,
                         ref right,
                     },
             } => write!(f, "[{:?}..{:?})", left, right),
-            &Interval::UnboundedClosedRight { ref right } => write!(f, "({}..{:?}]", "←", right),
-            &Interval::UnboundedOpenRight { ref right } => write!(f, "({}..{:?})", "←", right),
-            &Interval::UnboundedClosedLeft { ref left } => write!(f, "[{:?}..{})", left, "→"),
-            &Interval::UnboundedOpenLeft { ref left } => write!(f, "({:?}..{})", left, "→"),
-            &Interval::Singleton { ref at } => write!(f, "[{:?}]", at),
-            &Interval::Unbounded => write!(f, "({}..{})", "←", "→"),
-            &Interval::Empty => write!(f, "Empty"),
+            Interval::UnboundedClosedRight { ref right } => write!(f, "(←..{:?}]", right),
+            Interval::UnboundedOpenRight { ref right } => write!(f, "(←..{:?})", right),
+            Interval::UnboundedClosedLeft { ref left } => write!(f, "[{:?}..→)", left),
+            Interval::UnboundedOpenLeft { ref left } => write!(f, "({:?}..→)", left),
+            Interval::Singleton { ref at } => write!(f, "[{:?}]", at),
+            Interval::Unbounded => write!(f, "(←..→)"),
+            Interval::Empty => write!(f, "Empty"),
         }
     }
 }
