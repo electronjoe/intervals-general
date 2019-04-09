@@ -474,6 +474,75 @@ where
             (Bound::Open(left), Bound::Open(right)) => Some(right - left),
         }
     }
+
+    /// Take the complement of the Interval, return one or two Intervals
+    ///
+    /// If only a single Interval is returned, it is always the first
+    /// element of the two-tuple.  The second return value is Optional and
+    /// depends upon the Interval variant on which complement is operating.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use intervals_general::bound_pair::BoundPair;
+    /// use intervals_general::interval::Interval;
+    ///
+    /// # fn main() -> std::result::Result<(), String> {
+    /// assert_eq!(
+    ///     Interval::Closed {
+    ///         bound_pair: BoundPair::new(1, 5).ok_or("invalid BoundPair")?,
+    ///     }
+    ///     .complement(),
+    ///     (
+    ///         Interval::UnboundedOpenRight { right: 1 },
+    ///         Some(Interval::UnboundedOpenLeft { left: 5 })
+    ///     )
+    /// );
+    /// assert_eq!(
+    ///     Interval::Empty::<u32>.complement(),
+    ///     (Interval::Unbounded, None)
+    /// );
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn complement(&self) -> (Interval<T>, Option<Interval<T>>) {
+        match self {
+            Interval::Closed { bound_pair: bp } => (
+                Interval::UnboundedOpenRight { right: bp.left },
+                Some(Interval::UnboundedOpenLeft { left: bp.right }),
+            ),
+            Interval::Open { bound_pair: bp } => (
+                Interval::UnboundedClosedRight { right: bp.left },
+                Some(Interval::UnboundedClosedLeft { left: bp.right }),
+            ),
+            Interval::LeftHalfOpen { bound_pair: bp } => (
+                Interval::UnboundedClosedRight { right: bp.left },
+                Some(Interval::UnboundedOpenLeft { left: bp.right }),
+            ),
+            Interval::RightHalfOpen { bound_pair: bp } => (
+                Interval::UnboundedOpenRight { right: bp.left },
+                Some(Interval::UnboundedClosedLeft { left: bp.right }),
+            ),
+            Interval::UnboundedClosedRight { right: r } => {
+                (Interval::UnboundedOpenLeft { left: *r }, None)
+            }
+            Interval::UnboundedOpenRight { right: r } => {
+                (Interval::UnboundedClosedLeft { left: *r }, None)
+            }
+            Interval::UnboundedClosedLeft { left: l } => {
+                (Interval::UnboundedOpenRight { right: *l }, None)
+            }
+            Interval::UnboundedOpenLeft { left: l } => {
+                (Interval::UnboundedClosedRight { right: *l }, None)
+            }
+            Interval::Singleton { at: a } => (
+                Interval::UnboundedOpenRight { right: *a },
+                Some(Interval::UnboundedOpenLeft { left: *a }),
+            ),
+            Interval::Unbounded => (Interval::Empty, None),
+            Interval::Empty => (Interval::Unbounded, None),
+        }
+    }
 }
 
 /// Implement the Display trait for Intervals
@@ -572,6 +641,66 @@ mod interval_tests {
     use crate::interval::Interval;
     use quickcheck::TestResult;
     use quickcheck_macros::quickcheck;
+
+    #[test]
+    fn test_complements() {
+        assert_eq!(
+            Interval::Closed {
+                bound_pair: BoundPair::new(1, 5).unwrap()
+            }
+            .complement(),
+            (
+                Interval::UnboundedOpenRight { right: 1 },
+                Some(Interval::UnboundedOpenLeft { left: 5 })
+            )
+        );
+        assert_eq!(
+            Interval::Open {
+                bound_pair: BoundPair::new(1, 5).unwrap()
+            }
+            .complement(),
+            (
+                Interval::UnboundedClosedRight { right: 1 },
+                Some(Interval::UnboundedClosedLeft { left: 5 })
+            )
+        );
+        assert_eq!(
+            Interval::LeftHalfOpen {
+                bound_pair: BoundPair::new(1, 5).unwrap()
+            }
+            .complement(),
+            (
+                Interval::UnboundedClosedRight { right: 1 },
+                Some(Interval::UnboundedOpenLeft { left: 5 })
+            )
+        );
+        assert_eq!(
+            Interval::RightHalfOpen {
+                bound_pair: BoundPair::new(1, 5).unwrap()
+            }
+            .complement(),
+            (
+                Interval::UnboundedOpenRight { right: 1 },
+                Some(Interval::UnboundedClosedLeft { left: 5 })
+            )
+        );
+        assert_eq!(
+            Interval::UnboundedClosedRight { right: 5 }.complement(),
+            (Interval::UnboundedOpenLeft { left: 5 }, None,)
+        );
+        assert_eq!(
+            Interval::UnboundedOpenRight { right: 5 }.complement(),
+            (Interval::UnboundedClosedLeft { left: 5 }, None,)
+        );
+        assert_eq!(
+            Interval::UnboundedClosedLeft { left: 1 }.complement(),
+            (Interval::UnboundedOpenRight { right: 1 }, None,)
+        );
+        assert_eq!(
+            Interval::UnboundedOpenLeft { left: 1 }.complement(),
+            (Interval::UnboundedClosedRight { right: 1 }, None,)
+        );
+    }
 
     #[quickcheck]
     fn intersect_strictly_shrinks_u32(l1: u32, l2: u32, r1: u32, r2: u32) -> TestResult {
