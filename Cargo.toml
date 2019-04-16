@@ -5,6 +5,7 @@ authors = ["Scott Moeller <electronjoe@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+either = "1.5.2"
 
 [dev-dependencies]
 criterion = "0.2"

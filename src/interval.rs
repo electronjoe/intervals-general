@@ -1,4 +1,5 @@
 use crate::bound_pair::BoundPair;
+use either::Either;
 use std::cmp::Ordering;
 
 /// Interval enum capable of general interval representation
@@ -50,6 +51,10 @@ enum Bound<T> {
     Open(T),
     Closed(T),
 }
+
+type TwoIntervalIter<T> =
+    std::iter::Chain<std::iter::Once<Interval<T>>, std::iter::Once<Interval<T>>>;
+type OneIntervalIter<T> = std::iter::Once<Interval<T>>;
 
 impl<T> Interval<T>
 where
@@ -477,9 +482,8 @@ where
 
     /// Take the complement of the Interval, return one or two Intervals
     ///
-    /// If only a single Interval is returned, it is always the first
-    /// element of the two-tuple.  The second return value is Optional and
-    /// depends upon the Interval variant on which complement is operating.
+    /// The return value is iterable and contains exclusively one or two
+    /// Intervals, depending upon result.
     ///
     /// # Example
     ///
@@ -488,59 +492,70 @@ where
     /// use intervals_general::interval::Interval;
     ///
     /// # fn main() -> std::result::Result<(), String> {
-    /// assert_eq!(
+    /// let mut result_it =
     ///     Interval::Closed {
     ///         bound_pair: BoundPair::new(1, 5).ok_or("invalid BoundPair")?,
     ///     }
-    ///     .complement(),
-    ///     (
-    ///         Interval::UnboundedOpenRight { right: 1 },
-    ///         Some(Interval::UnboundedOpenLeft { left: 5 })
-    ///     )
+    ///     .complement();
+    ///
+    /// assert_eq!(
+    ///     result_it.next(),
+    ///     Some(Interval::UnboundedOpenRight { right: 1 })
     /// );
     /// assert_eq!(
-    ///     Interval::Empty::<u32>.complement(),
-    ///     (Interval::Unbounded, None)
+    ///     result_it.next(),
+    ///     Some(Interval::UnboundedOpenLeft{ left: 5 })
+    /// );
+    /// assert_eq!(
+    ///     result_it.next(),
+    ///     None
     /// );
     /// # Ok(())
     /// # }
     /// ```
-    pub fn complement(&self) -> (Interval<T>, Option<Interval<T>>) {
+    pub fn complement(&self) -> Either<OneIntervalIter<T>, TwoIntervalIter<T>> {
         match self {
-            Interval::Closed { bound_pair: bp } => (
-                Interval::UnboundedOpenRight { right: bp.left },
-                Some(Interval::UnboundedOpenLeft { left: bp.right }),
+            // Interval::Closed { bound_pair: bp } => Either::Left(std::iter::once(Interval::Empty)),
+            Interval::Closed { bound_pair: bp } => Either::Right(
+                std::iter::once(Interval::UnboundedOpenRight { right: bp.left }).chain(
+                    std::iter::once(Interval::UnboundedOpenLeft { left: bp.right }),
+                ),
             ),
-            Interval::Open { bound_pair: bp } => (
-                Interval::UnboundedClosedRight { right: bp.left },
-                Some(Interval::UnboundedClosedLeft { left: bp.right }),
+            Interval::Open { bound_pair: bp } => Either::Right(
+                std::iter::once(Interval::UnboundedClosedRight { right: bp.left }).chain(
+                    std::iter::once(Interval::UnboundedClosedLeft { left: bp.right }),
+                ),
             ),
-            Interval::LeftHalfOpen { bound_pair: bp } => (
-                Interval::UnboundedClosedRight { right: bp.left },
-                Some(Interval::UnboundedOpenLeft { left: bp.right }),
+            Interval::LeftHalfOpen { bound_pair: bp } => Either::Right(
+                std::iter::once(Interval::UnboundedClosedRight { right: bp.left }).chain(
+                    std::iter::once(Interval::UnboundedOpenLeft { left: bp.right }),
+                ),
             ),
-            Interval::RightHalfOpen { bound_pair: bp } => (
-                Interval::UnboundedOpenRight { right: bp.left },
-                Some(Interval::UnboundedClosedLeft { left: bp.right }),
+            Interval::RightHalfOpen { bound_pair: bp } => Either::Right(
+                std::iter::once(Interval::UnboundedOpenRight { right: bp.left }).chain(
+                    std::iter::once(Interval::UnboundedClosedLeft { left: bp.right }),
+                ),
             ),
             Interval::UnboundedClosedRight { right: r } => {
-                (Interval::UnboundedOpenLeft { left: *r }, None)
+                Either::Left(std::iter::once(Interval::UnboundedOpenLeft { left: *r }))
             }
             Interval::UnboundedOpenRight { right: r } => {
-                (Interval::UnboundedClosedLeft { left: *r }, None)
+                Either::Left(std::iter::once(Interval::UnboundedClosedLeft { left: *r }))
             }
             Interval::UnboundedClosedLeft { left: l } => {
-                (Interval::UnboundedOpenRight { right: *l }, None)
+                Either::Left(std::iter::once(Interval::UnboundedOpenRight { right: *l }))
             }
             Interval::UnboundedOpenLeft { left: l } => {
-                (Interval::UnboundedClosedRight { right: *l }, None)
+                Either::Left(std::iter::once(Interval::UnboundedClosedRight {
+                    right: *l,
+                }))
             }
-            Interval::Singleton { at: a } => (
-                Interval::UnboundedOpenRight { right: *a },
-                Some(Interval::UnboundedOpenLeft { left: *a }),
+            Interval::Singleton { at: a } => Either::Right(
+                std::iter::once(Interval::UnboundedOpenRight { right: *a })
+                    .chain(std::iter::once(Interval::UnboundedOpenLeft { left: *a })),
             ),
-            Interval::Unbounded => (Interval::Empty, None),
-            Interval::Empty => (Interval::Unbounded, None),
+            Interval::Unbounded => Either::Left(std::iter::once(Interval::Empty)),
+            Interval::Empty => Either::Left(std::iter::once(Interval::Unbounded)),
         }
     }
 }
@@ -619,63 +634,59 @@ mod tests {
     use quickcheck_macros::quickcheck;
 
     #[test]
-    fn test_complements() {
-        assert_eq!(
-            Interval::Closed {
-                bound_pair: BoundPair::new(1, 5).unwrap()
-            }
-            .complement(),
-            (
-                Interval::UnboundedOpenRight { right: 1 },
-                Some(Interval::UnboundedOpenLeft { left: 5 })
-            )
-        );
-        assert_eq!(
-            Interval::Open {
-                bound_pair: BoundPair::new(1, 5).unwrap()
-            }
-            .complement(),
-            (
-                Interval::UnboundedClosedRight { right: 1 },
-                Some(Interval::UnboundedClosedLeft { left: 5 })
-            )
-        );
-        assert_eq!(
-            Interval::LeftHalfOpen {
-                bound_pair: BoundPair::new(1, 5).unwrap()
-            }
-            .complement(),
-            (
-                Interval::UnboundedClosedRight { right: 1 },
-                Some(Interval::UnboundedOpenLeft { left: 5 })
-            )
-        );
-        assert_eq!(
-            Interval::RightHalfOpen {
-                bound_pair: BoundPair::new(1, 5).unwrap()
-            }
-            .complement(),
-            (
-                Interval::UnboundedOpenRight { right: 1 },
-                Some(Interval::UnboundedClosedLeft { left: 5 })
-            )
-        );
-        assert_eq!(
-            Interval::UnboundedClosedRight { right: 5 }.complement(),
-            (Interval::UnboundedOpenLeft { left: 5 }, None,)
-        );
-        assert_eq!(
-            Interval::UnboundedOpenRight { right: 5 }.complement(),
-            (Interval::UnboundedClosedLeft { left: 5 }, None,)
-        );
-        assert_eq!(
-            Interval::UnboundedClosedLeft { left: 1 }.complement(),
-            (Interval::UnboundedOpenRight { right: 1 }, None,)
-        );
-        assert_eq!(
-            Interval::UnboundedOpenLeft { left: 1 }.complement(),
-            (Interval::UnboundedClosedRight { right: 1 }, None,)
-        );
+    fn test_bounded_complements() {
+        let bp = BoundPair::new(1, 5).unwrap();
+        let mut it = Interval::Closed { bound_pair: bp }.complement();
+        assert_eq!(it.next(), Some(Interval::UnboundedOpenRight { right: 1 }));
+        assert_eq!(it.next(), Some(Interval::UnboundedOpenLeft { left: 5 }));
+        assert_eq!(it.next(), None);
+
+        it = Interval::Open { bound_pair: bp }.complement();
+        assert_eq!(it.next(), Some(Interval::UnboundedClosedRight { right: 1 }));
+        assert_eq!(it.next(), Some(Interval::UnboundedClosedLeft { left: 5 }));
+        assert_eq!(it.next(), None);
+
+        it = Interval::LeftHalfOpen { bound_pair: bp }.complement();
+        assert_eq!(it.next(), Some(Interval::UnboundedClosedRight { right: 1 }));
+        assert_eq!(it.next(), Some(Interval::UnboundedOpenLeft { left: 5 }));
+        assert_eq!(it.next(), None);
+
+        it = Interval::RightHalfOpen { bound_pair: bp }.complement();
+        assert_eq!(it.next(), Some(Interval::UnboundedOpenRight { right: 1 }));
+        assert_eq!(it.next(), Some(Interval::UnboundedClosedLeft { left: 5 }));
+        assert_eq!(it.next(), None);
+    }
+
+    #[test]
+    fn test_unbounded_complements() {
+        let mut it = Interval::UnboundedClosedRight { right: 5 }.complement();
+        assert_eq!(it.next(), Some(Interval::UnboundedOpenLeft { left: 5 }));
+        assert_eq!(it.next(), None);
+
+        it = Interval::UnboundedOpenRight { right: 5 }.complement();
+        assert_eq!(it.next(), Some(Interval::UnboundedClosedLeft { left: 5 }));
+        assert_eq!(it.next(), None);
+
+        it = Interval::UnboundedClosedLeft { left: 1 }.complement();
+        assert_eq!(it.next(), Some(Interval::UnboundedOpenRight { right: 1 }));
+        assert_eq!(it.next(), None);
+
+        it = Interval::UnboundedOpenLeft { left: 1 }.complement();
+        assert_eq!(it.next(), Some(Interval::UnboundedClosedRight { right: 1 }));
+        assert_eq!(it.next(), None);
+
+        let mut it = Interval::Singleton { at: 2.0 }.complement();
+        assert_eq!(it.next(), Some(Interval::UnboundedOpenRight { right: 2.0 }));
+        assert_eq!(it.next(), Some(Interval::UnboundedOpenLeft { left: 2.0 }));
+        assert_eq!(it.next(), None);
+
+        it = Interval::Unbounded.complement();
+        assert_eq!(it.next(), Some(Interval::Empty));
+        assert_eq!(it.next(), None);
+
+        it = Interval::Empty.complement();
+        assert_eq!(it.next(), Some(Interval::Unbounded));
+        assert_eq!(it.next(), None);
     }
 
     #[test]
