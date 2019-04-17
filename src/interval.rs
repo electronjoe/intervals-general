@@ -60,7 +60,6 @@ impl<T> Interval<T>
 where
     T: Copy,
     T: std::cmp::PartialOrd,
-    T: std::ops::Sub,
 {
     /// Verify whether self contains the specified interval
     ///
@@ -464,7 +463,10 @@ where
     /// # Ok(())
     /// # }
     /// ```
-    pub fn width(&self) -> Option<<T as std::ops::Sub>::Output> {
+    pub fn width(&self) -> Option<<T as std::ops::Sub>::Output>
+    where
+        T: std::ops::Sub,
+    {
         let self_left_bound = self.to_left_bound();
         let self_right_bound = self.to_right_bound();
 
