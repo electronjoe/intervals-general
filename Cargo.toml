@@ -7,7 +7,11 @@ intervals-general is a crate enabling general representation of and
 operations on intervals over generic types (e.g. supporting units of measure
 or arbitrary built-in types, or any type with PartialOrd implementation).
 """
-keywords = ["intervals", "interval", "math", "units", "measurement", "SI"]
+documentation = "https://github.com/electronjoe/intervals-general"
+homepage = "https://github.com/electronjoe/intervals-general"
+repository = "https://github.com/electronjoe/intervals-general"
+readme = "README.md"
+keywords = ["intervals", "interval", "math", "units", "measurement"]
 categories = ["science", "data-structures"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
