@@ -2,7 +2,20 @@
 name = "intervals-general"
 version = "0.1.0"
 authors = ["Scott Moeller <electronjoe@gmail.com>"]
+description = """
+intervals-general is a crate enabling general representation of and
+operations on intervals over generic types (e.g. supporting units of measure
+or arbitrary built-in types, or any type with PartialOrd implementation).
+"""
+keywords = ["intervals", "interval", "math", "units", "measurement", "SI"]
+categories = ["science", "data-structures"]
 edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[badges]
+travis-ci = { repository = "electronjoe/intervals-general" }
+coveralls = { repository = "electronjoe/intervals-general" }
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 either = "1.5.2"
