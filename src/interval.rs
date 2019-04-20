@@ -517,7 +517,6 @@ where
     /// ```
     pub fn complement(&self) -> Either<OneIntervalIter<T>, TwoIntervalIter<T>> {
         match self {
-            // Interval::Closed { bound_pair: bp } => Either::Left(std::iter::once(Interval::Empty)),
             Interval::Closed { bound_pair: bp } => Either::Right(
                 std::iter::once(Interval::UnboundedOpenRight { right: bp.left }).chain(
                     std::iter::once(Interval::UnboundedOpenLeft { left: bp.right }),
