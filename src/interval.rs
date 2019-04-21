@@ -192,6 +192,8 @@ where
             (Bound::Closed(left), Bound::Closed(right)) => {
                 if left > right {
                     Interval::Empty
+                } else if left == right {
+                    Interval::Singleton { at: left }
                 } else {
                     Interval::Closed {
                         bound_pair: BoundPair { left, right },
