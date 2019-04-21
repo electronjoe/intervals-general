@@ -1,5 +1,5 @@
 use crate::bound_pair::BoundPair;
-use either::Either;
+use itertools::Either;
 use std::cmp::Ordering;
 
 /// Interval enum capable of general interval representation
@@ -517,7 +517,7 @@ where
     /// # Ok(())
     /// # }
     /// ```
-    pub fn complement(&self) -> Either<OneIntervalIter<T>, TwoIntervalIter<T>> {
+    pub fn complement(&self) -> itertools::Either<OneIntervalIter<T>, TwoIntervalIter<T>> {
         match self {
             Interval::Closed { bound_pair: bp } => Either::Right(
                 std::iter::once(Interval::UnboundedOpenRight { right: bp.left }).chain(
@@ -633,8 +633,97 @@ where
 mod tests {
     use crate::bound_pair::BoundPair;
     use crate::interval::Interval;
+    use itertools::Either;
+    use quickcheck::Arbitrary;
     use quickcheck::TestResult;
     use quickcheck_macros::quickcheck;
+
+    impl<T> Arbitrary for Interval<T>
+    where
+        T: Arbitrary + Copy + Clone + PartialOrd + Send + 'static,
+    {
+        fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Interval<T> {
+            let variant_idx = g.next_u32() % 12;
+            match variant_idx {
+                0 => {
+                    let mut bound_pair = None;
+                    while let None = bound_pair {
+                        bound_pair =
+                            BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
+                    }
+                    Interval::Closed {
+                        bound_pair: bound_pair.unwrap(),
+                    }
+                }
+                1 => {
+                    let mut bound_pair = None;
+                    while let None = bound_pair {
+                        bound_pair =
+                            BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
+                    }
+                    Interval::Open {
+                        bound_pair: bound_pair.unwrap(),
+                    }
+                }
+                2 => {
+                    let mut bound_pair = None;
+                    while let None = bound_pair {
+                        bound_pair =
+                            BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
+                    }
+                    Interval::LeftHalfOpen {
+                        bound_pair: bound_pair.unwrap(),
+                    }
+                }
+                3 => {
+                    let mut bound_pair = None;
+                    while let None = bound_pair {
+                        bound_pair =
+                            BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
+                    }
+                    Interval::LeftHalfOpen {
+                        bound_pair: bound_pair.unwrap(),
+                    }
+                }
+                4 => {
+                    let mut bound_pair = None;
+                    while let None = bound_pair {
+                        bound_pair =
+                            BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
+                    }
+                    Interval::RightHalfOpen {
+                        bound_pair: bound_pair.unwrap(),
+                    }
+                }
+                5 => Interval::UnboundedClosedRight {
+                    right: Arbitrary::arbitrary(g),
+                },
+                6 => Interval::UnboundedOpenRight {
+                    right: Arbitrary::arbitrary(g),
+                },
+                7 => Interval::UnboundedClosedLeft {
+                    left: Arbitrary::arbitrary(g),
+                },
+                8 => Interval::UnboundedOpenLeft {
+                    left: Arbitrary::arbitrary(g),
+                },
+                9 => Interval::Singleton {
+                    at: Arbitrary::arbitrary(g),
+                },
+                10 => Interval::Unbounded,
+                11 => Interval::Empty,
+                _ => panic!(),
+            }
+        }
+
+        // fn shrink(&self) -> Box<Iterator<Item = Self>> {
+        //     match self {
+        //         // &Interval::Unbounded => Box::new(Interval::Unbounded),
+        //         // &Qqq::Kokoko(ref x) => Box::new(x.shrink().map(|s| Qqq::Kokoko(s))),
+        //         _ => quickcheck::empty_shrinker(),
+        //     }
+        // }
+    }
 
     #[test]
     fn test_bounded_complements() {
@@ -759,5 +848,22 @@ mod tests {
             // Discard invalid randomly generated intervals
             TestResult::discard()
         }
+    }
+
+    #[quickcheck]
+    fn complement_symmetric_u32(i: Interval<u32>) -> TestResult {
+        let double_complement = match i.complement() {
+            Either::Left(mut interval) => interval.next().unwrap().complement().next().unwrap(),
+            Either::Right(mut intervals) => {
+                let i1 = intervals.next().unwrap();
+                let i2 = intervals.next().unwrap();
+                i1.complement()
+                    .next()
+                    .unwrap()
+                    .intersect(&i2.complement().next().unwrap())
+            }
+        };
+
+        TestResult::from_bool(double_complement == i)
     }
 }

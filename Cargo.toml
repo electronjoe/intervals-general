@@ -22,7 +22,7 @@ coveralls = { repository = "electronjoe/intervals-general" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-either = "1.5.2"
+itertools = "0.8.0"
 
 [dev-dependencies]
 criterion = "0.2"
