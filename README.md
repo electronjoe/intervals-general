@@ -4,7 +4,7 @@
 * Last Edit Mar 24, 2019
 * Work in Progress
 * Scott Moeller
-CI - Clippy, Rustfmt, Rustdoc, & Tarpaulin
+
 [![Github Actions](https://img.shields.io/github/workflow/status/electronjoe/intervals-general/CI%20-%20Clippy%2C%20Rustfmt%2C%20Rustdoc%2C%20%26%20Tarpaulin/master?label=linting)](https://github.com)
 [![Codecov.io](https://img.shields.io/codecov/c/github/electronjoe/intervals-general/master)](https://codecov.io/gh/electronjoe/intervals-general)
 
