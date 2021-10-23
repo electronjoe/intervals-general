@@ -17,8 +17,6 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 [badges]
-travis-ci = { repository = "electronjoe/intervals-general" }
-coveralls = { repository = "electronjoe/intervals-general" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
