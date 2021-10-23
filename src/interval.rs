@@ -102,10 +102,10 @@ where
     /// # }
     /// ```
     pub fn contains(&self, other: &Interval<T>) -> bool {
-        let self_right_bound = self.to_right_bound();
-        let other_right_bound = other.to_right_bound();
-        let self_left_bound = self.to_left_bound();
-        let other_left_bound = other.to_left_bound();
+        let self_right_bound = self.right_bound();
+        let other_right_bound = other.right_bound();
+        let self_left_bound = self.left_bound();
+        let other_left_bound = other.left_bound();
 
         let left_contained = match (self_left_bound, other_left_bound) {
             // The Empty Interval contains no other Intervals (even Empty)
@@ -169,21 +169,21 @@ where
     /// # }
     /// ```
     pub fn intersect(&self, other: &Interval<T>) -> Interval<T> {
-        let left_cmp_partial = self.left_partial_cmp(&other);
-        let right_cmp_partial = self.right_partial_cmp(&other);
+        let left_cmp_partial = self.left_partial_cmp(other);
+        let right_cmp_partial = self.right_partial_cmp(other);
         if left_cmp_partial.is_none() || right_cmp_partial.is_none() {
             return Interval::Empty;
         }
 
         let left_bound = if left_cmp_partial != Some(Ordering::Less) {
-            self.to_left_bound()
+            self.left_bound()
         } else {
-            other.to_left_bound()
+            other.left_bound()
         };
         let right_bound = if right_cmp_partial != Some(Ordering::Greater) {
-            self.to_right_bound()
+            self.right_bound()
         } else {
-            other.to_right_bound()
+            other.right_bound()
         };
 
         match (left_bound, right_bound) {
@@ -235,7 +235,7 @@ where
         }
     }
 
-    fn to_left_bound(&self) -> Bound<T> {
+    fn left_bound(&self) -> Bound<T> {
         match self {
             Interval::Empty => Bound::None,
             Interval::Singleton { ref at } => Bound::Closed(*at),
@@ -262,7 +262,7 @@ where
         }
     }
 
-    fn to_right_bound(&self) -> Bound<T> {
+    fn right_bound(&self) -> Bound<T> {
         match self {
             Interval::Empty => Bound::None,
             Interval::Singleton { ref at } => Bound::Closed(*at),
@@ -318,8 +318,8 @@ where
     /// # }
     /// ```
     pub fn left_partial_cmp(&self, other: &Interval<T>) -> Option<Ordering> {
-        let self_left_bound = self.to_left_bound();
-        let other_left_bound = other.to_left_bound();
+        let self_left_bound = self.left_bound();
+        let other_left_bound = other.left_bound();
 
         match (self_left_bound, other_left_bound) {
             (Bound::None, _) => None,
@@ -394,8 +394,8 @@ where
     /// # }
     /// ```
     pub fn right_partial_cmp(&self, other: &Interval<T>) -> Option<Ordering> {
-        let self_right_bound = self.to_right_bound();
-        let other_right_bound = other.to_right_bound();
+        let self_right_bound = self.right_bound();
+        let other_right_bound = other.right_bound();
 
         match (self_right_bound, other_right_bound) {
             (Bound::None, _) => None,
@@ -469,8 +469,8 @@ where
     where
         T: std::ops::Sub,
     {
-        let self_left_bound = self.to_left_bound();
-        let self_right_bound = self.to_right_bound();
+        let self_left_bound = self.left_bound();
+        let self_right_bound = self.right_bound();
 
         match (self_left_bound, self_right_bound) {
             (Bound::None, _) => None,
