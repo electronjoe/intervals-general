@@ -4,9 +4,9 @@
 * Last Edit Mar 24, 2019
 * Work in Progress
 * Scott Moeller
-
-[![Travis](https://travis-ci.org/electronjoe/intervals-general.svg?branch=master)](https://travis-ci.org/electronjoe/intervals-general)
-[![Coveralls](https://coveralls.io/repos/github/electronjoe/intervals-general/badge.svg?branch=master)](https://coveralls.io/github/electronjoe/intervals-general?branch=master)
+CI - Clippy, Rustfmt, Rustdoc, & Tarpaulin
+[![Github Actions](https://img.shields.io/github/workflow/status/electronjoe/intervals-general/CI%20-%20Clippy%2C%20Rustfmt%2C%20Rustdoc%2C%20%26%20Tarpaulin/master?label=linting)](https://github.com)
+[![Codecov.io](https://img.shields.io/codecov/c/github/electronjoe/intervals-general/master)](https://codecov.io/gh/electronjoe/intervals-general)
 
 ## Summary
 
