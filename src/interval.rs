@@ -647,7 +647,7 @@ mod tests {
             match variant_idx {
                 0 => {
                     let mut bound_pair = None;
-                    while let None = bound_pair {
+                    while bound_pair.is_none() {
                         bound_pair =
                             BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
                     }
@@ -657,7 +657,7 @@ mod tests {
                 }
                 1 => {
                     let mut bound_pair = None;
-                    while let None = bound_pair {
+                    while bound_pair.is_none() {
                         bound_pair =
                             BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
                     }
@@ -667,7 +667,7 @@ mod tests {
                 }
                 2 => {
                     let mut bound_pair = None;
-                    while let None = bound_pair {
+                    while bound_pair.is_none() {
                         bound_pair =
                             BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
                     }
@@ -677,7 +677,7 @@ mod tests {
                 }
                 3 => {
                     let mut bound_pair = None;
-                    while let None = bound_pair {
+                    while bound_pair.is_none() {
                         bound_pair =
                             BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
                     }
@@ -687,7 +687,7 @@ mod tests {
                 }
                 4 => {
                     let mut bound_pair = None;
-                    while let None = bound_pair {
+                    while bound_pair.is_none() {
                         bound_pair =
                             BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
                     }
