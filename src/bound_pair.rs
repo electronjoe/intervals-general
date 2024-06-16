@@ -1,13 +1,37 @@
-/// A BoundPair represents valid left and right Interval bounds
-///
-/// For Intervals containing finite bounds, the BoundPair construction
-/// ensures well-formed left and right bounds prior to Interval enum
-/// construction (e.g. left < right).
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct BoundPair<T> {
-    pub(crate) left: T,
-    pub(crate) right: T,
+#[cfg(not(feature = "serde"))]
+mod without_serde {
+    /// A BoundPair represents valid left and right Interval bounds
+    ///
+    /// For Intervals containing finite bounds, the BoundPair construction
+    /// ensures well-formed left and right bounds prior to Interval enum
+    /// construction (e.g. left < right).
+    #[derive(Debug, Copy, Clone, PartialEq)]
+    pub struct BoundPair<T> {
+        pub(crate) left: T,
+        pub(crate) right: T,
+    }
 }
+
+#[cfg(feature = "serde")]
+mod with_serde {
+    use serde::{Deserialize, Serialize};
+
+    /// A BoundPair represents valid left and right Interval bounds
+    ///
+    /// For Intervals containing finite bounds, the BoundPair construction
+    /// ensures well-formed left and right bounds prior to Interval enum
+    /// construction (e.g. left < right).
+    #[derive(Debug, Copy, Clone, PartialEq, Serialize, Deserialize)]
+    pub struct BoundPair<T> {
+        pub(crate) left: T,
+        pub(crate) right: T,
+    }
+}
+
+#[cfg(feature = "serde")]
+pub use with_serde::BoundPair;
+#[cfg(not(feature = "serde"))]
+pub use without_serde::BoundPair;
 
 impl<T> BoundPair<T>
 where

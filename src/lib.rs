@@ -32,5 +32,8 @@
 //! 1. No use of of panic, assert
 //! 1. Minimize error handling by design
 //! 1. Make the library hard to use incorrectly
+
 pub mod bound_pair;
 pub mod interval;
+
+pub use interval::Interval;
