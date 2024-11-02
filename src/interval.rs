@@ -701,52 +701,59 @@ mod tests {
         T: Arbitrary + Copy + Clone + PartialOrd + Send + 'static,
     {
         fn arbitrary(g: &mut Gen) -> Interval<T> {
-            let variant_idx = g.size() % 12;
+            const VARIANT_COUNT: usize = 12;
+            let variant_idx = g.size() % VARIANT_COUNT;
+
             match variant_idx {
                 0 => {
-                    let mut bound_pair = None;
-                    while bound_pair.is_none() {
-                        bound_pair = BoundPair::new(T::arbitrary(g), T::arbitrary(g));
-                    }
-                    Interval::Closed {
-                        bound_pair: bound_pair.unwrap(),
-                    }
+                    let bound_pair = loop {
+                        let left = T::arbitrary(g);
+                        let right = T::arbitrary(g);
+                        if let Some(bp) = BoundPair::new(left, right) {
+                            break bp;
+                        }
+                    };
+                    Interval::Closed { bound_pair }
                 }
                 1 => {
-                    let mut bound_pair = None;
-                    while bound_pair.is_none() {
-                        bound_pair = BoundPair::new(T::arbitrary(g), T::arbitrary(g));
-                    }
-                    Interval::Open {
-                        bound_pair: bound_pair.unwrap(),
-                    }
+                    let bound_pair = loop {
+                        let left = T::arbitrary(g);
+                        let right = T::arbitrary(g);
+                        if let Some(bp) = BoundPair::new(left, right) {
+                            break bp;
+                        }
+                    };
+                    Interval::Open { bound_pair }
                 }
                 2 => {
-                    let mut bound_pair = None;
-                    while bound_pair.is_none() {
-                        bound_pair = BoundPair::new(T::arbitrary(g), T::arbitrary(g));
-                    }
-                    Interval::LeftHalfOpen {
-                        bound_pair: bound_pair.unwrap(),
-                    }
+                    let bound_pair = loop {
+                        let left = T::arbitrary(g);
+                        let right = T::arbitrary(g);
+                        if let Some(bp) = BoundPair::new(left, right) {
+                            break bp;
+                        }
+                    };
+                    Interval::LeftHalfOpen { bound_pair }
                 }
                 3 => {
-                    let mut bound_pair = None;
-                    while bound_pair.is_none() {
-                        bound_pair = BoundPair::new(T::arbitrary(g), T::arbitrary(g));
-                    }
-                    Interval::LeftHalfOpen {
-                        bound_pair: bound_pair.unwrap(),
-                    }
+                    let bound_pair = loop {
+                        let left = T::arbitrary(g);
+                        let right = T::arbitrary(g);
+                        if let Some(bp) = BoundPair::new(left, right) {
+                            break bp;
+                        }
+                    };
+                    Interval::LeftHalfOpen { bound_pair }
                 }
                 4 => {
-                    let mut bound_pair = None;
-                    while bound_pair.is_none() {
-                        bound_pair = BoundPair::new(T::arbitrary(g), T::arbitrary(g));
-                    }
-                    Interval::RightHalfOpen {
-                        bound_pair: bound_pair.unwrap(),
-                    }
+                    let bound_pair = loop {
+                        let left = T::arbitrary(g);
+                        let right = T::arbitrary(g);
+                        if let Some(bp) = BoundPair::new(left, right) {
+                            break bp;
+                        }
+                    };
+                    Interval::RightHalfOpen { bound_pair }
                 }
                 5 => Interval::UnboundedClosedRight {
                     right: T::arbitrary(g),
@@ -765,7 +772,7 @@ mod tests {
                 },
                 10 => Interval::Unbounded,
                 11 => Interval::Empty,
-                _ => panic!(),
+                _ => unreachable!("variant_idx is always < VARIANT_COUNT"),
             }
         }
 
@@ -875,11 +882,9 @@ mod tests {
             let i1 = Interval::LeftHalfOpen { bound_pair: bp1 };
             let i2 = Interval::LeftHalfOpen { bound_pair: bp2 };
             let intersection = i1.intersect(&i2);
-            if (intersection.width() > i1.width()) | (intersection.width() > i2.width()) {
-                TestResult::from_bool(false)
-            } else {
-                TestResult::from_bool(true)
-            }
+            TestResult::from_bool(
+                !(intersection.width() > i1.width() || intersection.width() > i2.width()),
+            )
         } else {
             // Discard invalid randomly generated intervals
             TestResult::discard()
@@ -892,11 +897,9 @@ mod tests {
             let i1 = Interval::LeftHalfOpen { bound_pair: bp1 };
             let i2 = Interval::LeftHalfOpen { bound_pair: bp2 };
             let intersection = i1.intersect(&i2);
-            if (intersection.width() > i1.width()) | (intersection.width() > i2.width()) {
-                TestResult::from_bool(false)
-            } else {
-                TestResult::from_bool(true)
-            }
+            TestResult::from_bool(
+                !(intersection.width() > i1.width() || intersection.width() > i2.width()),
+            )
         } else {
             // Discard invalid randomly generated intervals
             TestResult::discard()
@@ -908,8 +911,7 @@ mod tests {
         let double_complement = match i.complement() {
             Either::Left(mut interval) => interval.next().unwrap().complement().next().unwrap(),
             Either::Right(mut intervals) => {
-                let i1 = intervals.next().unwrap();
-                let i2 = intervals.next().unwrap();
+                let [i1, i2] = [intervals.next().unwrap(), intervals.next().unwrap()];
                 i1.complement()
                     .next()
                     .unwrap()
