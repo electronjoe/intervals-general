@@ -692,6 +692,7 @@ mod tests {
     use crate::interval::Interval;
     use itertools::Either;
     use quickcheck::Arbitrary;
+    use quickcheck::Gen;
     use quickcheck::TestResult;
     use quickcheck_macros::quickcheck;
 
@@ -699,14 +700,13 @@ mod tests {
     where
         T: Arbitrary + Copy + Clone + PartialOrd + Send + 'static,
     {
-        fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Interval<T> {
-            let variant_idx = g.next_u32() % 12;
+        fn arbitrary(g: &mut Gen) -> Interval<T> {
+            let variant_idx = g.size() % 12;
             match variant_idx {
                 0 => {
                     let mut bound_pair = None;
                     while bound_pair.is_none() {
-                        bound_pair =
-                            BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
+                        bound_pair = BoundPair::new(T::arbitrary(g), T::arbitrary(g));
                     }
                     Interval::Closed {
                         bound_pair: bound_pair.unwrap(),
@@ -715,8 +715,7 @@ mod tests {
                 1 => {
                     let mut bound_pair = None;
                     while bound_pair.is_none() {
-                        bound_pair =
-                            BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
+                        bound_pair = BoundPair::new(T::arbitrary(g), T::arbitrary(g));
                     }
                     Interval::Open {
                         bound_pair: bound_pair.unwrap(),
@@ -725,8 +724,7 @@ mod tests {
                 2 => {
                     let mut bound_pair = None;
                     while bound_pair.is_none() {
-                        bound_pair =
-                            BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
+                        bound_pair = BoundPair::new(T::arbitrary(g), T::arbitrary(g));
                     }
                     Interval::LeftHalfOpen {
                         bound_pair: bound_pair.unwrap(),
@@ -735,8 +733,7 @@ mod tests {
                 3 => {
                     let mut bound_pair = None;
                     while bound_pair.is_none() {
-                        bound_pair =
-                            BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
+                        bound_pair = BoundPair::new(T::arbitrary(g), T::arbitrary(g));
                     }
                     Interval::LeftHalfOpen {
                         bound_pair: bound_pair.unwrap(),
@@ -745,27 +742,26 @@ mod tests {
                 4 => {
                     let mut bound_pair = None;
                     while bound_pair.is_none() {
-                        bound_pair =
-                            BoundPair::new(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g));
+                        bound_pair = BoundPair::new(T::arbitrary(g), T::arbitrary(g));
                     }
                     Interval::RightHalfOpen {
                         bound_pair: bound_pair.unwrap(),
                     }
                 }
                 5 => Interval::UnboundedClosedRight {
-                    right: Arbitrary::arbitrary(g),
+                    right: T::arbitrary(g),
                 },
                 6 => Interval::UnboundedOpenRight {
-                    right: Arbitrary::arbitrary(g),
+                    right: T::arbitrary(g),
                 },
                 7 => Interval::UnboundedClosedLeft {
-                    left: Arbitrary::arbitrary(g),
+                    left: T::arbitrary(g),
                 },
                 8 => Interval::UnboundedOpenLeft {
-                    left: Arbitrary::arbitrary(g),
+                    left: T::arbitrary(g),
                 },
                 9 => Interval::Singleton {
-                    at: Arbitrary::arbitrary(g),
+                    at: T::arbitrary(g),
                 },
                 10 => Interval::Unbounded,
                 11 => Interval::Empty,

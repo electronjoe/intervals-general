@@ -21,12 +21,12 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 itertools = "0.13.0"
-serde = { version = "1.0.203", features = ["derive"], optional = true }
+serde = { version = "1.0.214", features = ["derive"], optional = true }
 
 [dev-dependencies]
-criterion = "0.2"
-quickcheck = "0.8"
-quickcheck_macros = "0.8"
+criterion = "0.5"
+quickcheck = "1.0"
+quickcheck_macros = "1.0"
 
 [[bench]]
 name = "static_alternative"
