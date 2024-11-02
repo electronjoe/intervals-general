@@ -576,43 +576,59 @@ where
     /// ```
     pub fn complement(&self) -> itertools::Either<OneIntervalIter<T>, TwoIntervalIter<T>> {
         match self {
-            Interval::Closed { bound_pair: bp } => Either::Right(
-                std::iter::once(Interval::UnboundedOpenRight { right: bp.left }).chain(
-                    std::iter::once(Interval::UnboundedOpenLeft { left: bp.right }),
-                ),
-            ),
-            Interval::Open { bound_pair: bp } => Either::Right(
-                std::iter::once(Interval::UnboundedClosedRight { right: bp.left }).chain(
-                    std::iter::once(Interval::UnboundedClosedLeft { left: bp.right }),
-                ),
-            ),
-            Interval::LeftHalfOpen { bound_pair: bp } => Either::Right(
-                std::iter::once(Interval::UnboundedClosedRight { right: bp.left }).chain(
-                    std::iter::once(Interval::UnboundedOpenLeft { left: bp.right }),
-                ),
-            ),
-            Interval::RightHalfOpen { bound_pair: bp } => Either::Right(
-                std::iter::once(Interval::UnboundedOpenRight { right: bp.left }).chain(
-                    std::iter::once(Interval::UnboundedClosedLeft { left: bp.right }),
-                ),
-            ),
-            Interval::UnboundedClosedRight { right: r } => {
-                Either::Left(std::iter::once(Interval::UnboundedOpenLeft { left: *r }))
+            Interval::Closed { bound_pair } => {
+                let BoundPair { left, right } = *bound_pair;
+                Either::Right(
+                    std::iter::once(Interval::UnboundedOpenRight { right: left })
+                        .chain(std::iter::once(Interval::UnboundedOpenLeft { left: right })),
+                )
             }
-            Interval::UnboundedOpenRight { right: r } => {
-                Either::Left(std::iter::once(Interval::UnboundedClosedLeft { left: *r }))
+            Interval::Open { bound_pair } => {
+                let BoundPair { left, right } = *bound_pair;
+                Either::Right(
+                    std::iter::once(Interval::UnboundedClosedRight { right: left }).chain(
+                        std::iter::once(Interval::UnboundedClosedLeft { left: right }),
+                    ),
+                )
             }
-            Interval::UnboundedClosedLeft { left: l } => {
-                Either::Left(std::iter::once(Interval::UnboundedOpenRight { right: *l }))
+            Interval::LeftHalfOpen { bound_pair } => {
+                let BoundPair { left, right } = *bound_pair;
+                Either::Right(
+                    std::iter::once(Interval::UnboundedClosedRight { right: left })
+                        .chain(std::iter::once(Interval::UnboundedOpenLeft { left: right })),
+                )
             }
-            Interval::UnboundedOpenLeft { left: l } => {
-                Either::Left(std::iter::once(Interval::UnboundedClosedRight {
-                    right: *l,
+            Interval::RightHalfOpen { bound_pair } => {
+                let BoundPair { left, right } = *bound_pair;
+                Either::Right(
+                    std::iter::once(Interval::UnboundedOpenRight { right: left }).chain(
+                        std::iter::once(Interval::UnboundedClosedLeft { left: right }),
+                    ),
+                )
+            }
+            Interval::UnboundedClosedRight { right } => {
+                Either::Left(std::iter::once(Interval::UnboundedOpenLeft {
+                    left: *right,
                 }))
             }
-            Interval::Singleton { at: a } => Either::Right(
-                std::iter::once(Interval::UnboundedOpenRight { right: *a })
-                    .chain(std::iter::once(Interval::UnboundedOpenLeft { left: *a })),
+            Interval::UnboundedOpenRight { right } => {
+                Either::Left(std::iter::once(Interval::UnboundedClosedLeft {
+                    left: *right,
+                }))
+            }
+            Interval::UnboundedClosedLeft { left } => {
+                Either::Left(std::iter::once(Interval::UnboundedOpenRight {
+                    right: *left,
+                }))
+            }
+            Interval::UnboundedOpenLeft { left } => {
+                Either::Left(std::iter::once(Interval::UnboundedClosedRight {
+                    right: *left,
+                }))
+            }
+            Interval::Singleton { at } => Either::Right(
+                std::iter::once(Interval::UnboundedOpenRight { right: *at })
+                    .chain(std::iter::once(Interval::UnboundedOpenLeft { left: *at })),
             ),
             Interval::Unbounded => Either::Left(std::iter::once(Interval::Empty)),
             Interval::Empty => Either::Left(std::iter::once(Interval::Unbounded)),
