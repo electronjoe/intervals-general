@@ -27,6 +27,7 @@ serde = { version = "1.0.214", features = ["derive"], optional = true }
 criterion = "0.5"
 quickcheck = "1.0"
 quickcheck_macros = "1.0"
+serde_json = "1.0"
 
 [[bench]]
 name = "static_alternative"

@@ -60,10 +60,9 @@ where
     /// assert_eq!(BoundPair::new(2.0, 2.0), None);
     /// ```
     pub fn new(left: T, right: T) -> Option<BoundPair<T>> {
-        if left >= right {
-            None
-        } else {
-            Some(BoundPair { left, right })
+        match left.partial_cmp(&right) {
+            Some(std::cmp::Ordering::Less) => Some(BoundPair { left, right }),
+            _ => None,
         }
     }
 
@@ -97,5 +96,74 @@ where
     /// ```
     pub fn right(&self) -> &T {
         &self.right
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_valid_creation() {
+        assert!(BoundPair::new(1, 2).is_some());
+        assert!(BoundPair::new(-1.0, 1.0).is_some());
+        assert!(BoundPair::new(0u32, 100u32).is_some());
+    }
+
+    #[test]
+    fn test_invalid_creation() {
+        assert!(BoundPair::new(2, 1).is_none());
+        assert!(BoundPair::new(1.0, 1.0).is_none());
+        assert!(BoundPair::new(100u32, 50u32).is_none());
+    }
+
+    #[test]
+    fn test_accessors() {
+        let bp = BoundPair::new(1.5, 2.5).unwrap();
+        assert_eq!(*bp.left(), 1.5);
+        assert_eq!(*bp.right(), 2.5);
+    }
+
+    #[test]
+    fn test_floating_point() {
+        assert!(BoundPair::new(f64::NEG_INFINITY, f64::INFINITY).is_some());
+        assert!(BoundPair::new(f64::NAN, 1.0).is_none());
+        assert!(BoundPair::new(1.0, f64::NAN).is_none());
+    }
+
+    #[test]
+    fn test_copy() {
+        let bp1 = BoundPair::new(1, 2).unwrap();
+        let bp2 = bp1;
+        assert_eq!(bp1, bp2);
+    }
+}
+
+#[cfg(all(test, feature = "serde"))]
+mod serde_tests {
+    use super::*;
+    use serde_json;
+
+    #[test]
+    fn test_serialize() {
+        let bp = BoundPair::new(1, 2).unwrap();
+        let serialized = serde_json::to_string(&bp).unwrap();
+        assert_eq!(serialized, r#"{"left":1,"right":2}"#);
+    }
+
+    #[test]
+    fn test_deserialize() {
+        let json = r#"{"left":1,"right":2}"#;
+        let bp: BoundPair<i32> = serde_json::from_str(json).unwrap();
+        assert_eq!(*bp.left(), 1);
+        assert_eq!(*bp.right(), 2);
+    }
+
+    #[test]
+    fn test_roundtrip() {
+        let bp1 = BoundPair::new(1.5, 2.5).unwrap();
+        let serialized = serde_json::to_string(&bp1).unwrap();
+        let bp2: BoundPair<f64> = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(bp1, bp2);
     }
 }
