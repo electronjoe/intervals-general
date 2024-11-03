@@ -937,6 +937,48 @@ mod tests {
 
         TestResult::from_bool(double_complement == i)
     }
+
+    #[test]
+    fn test_intersection_edge_cases() {
+        // Test intersection resulting in singleton
+        let left_interval = Interval::Closed {
+            bound_pair: BoundPair::new(0, 5).unwrap(),
+        };
+        let right_interval = Interval::Closed {
+            bound_pair: BoundPair::new(5, 10).unwrap(),
+        };
+
+        // Intersection at single point should yield singleton
+        assert_eq!(
+            left_interval.intersect(&right_interval),
+            Interval::Singleton { at: 5 }
+        );
+
+        // Test open interval edge cases
+        let left_open = Interval::Open {
+            bound_pair: BoundPair::new(0, 5).unwrap(),
+        };
+        let right_open = Interval::Open {
+            bound_pair: BoundPair::new(5, 10).unwrap(),
+        };
+
+        // Open intervals touching should yield empty
+        assert_eq!(left_open.intersect(&right_open), Interval::Empty);
+    }
+
+    #[test]
+    fn test_empty_interval_intersections() {
+        let normal_interval = Interval::Closed {
+            bound_pair: BoundPair::new(0, 5).unwrap(),
+        };
+        let empty = Interval::Empty;
+
+        // Empty interval intersected with any interval should yield empty
+        assert_eq!(empty.intersect(&normal_interval), Interval::Empty);
+        assert_eq!(normal_interval.intersect(&empty), Interval::Empty);
+        assert_eq!(empty.intersect(&empty), Interval::Empty);
+    }
+
     #[test]
     fn test_basic_contains() {
         let outer = Interval::Closed {
