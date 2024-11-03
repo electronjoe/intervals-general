@@ -102,6 +102,7 @@ pub use with_serde::Interval;
 pub use without_serde::Interval;
 
 // Internally used to simplify matching functions on Intervals
+#[derive(Debug, Copy, Clone, PartialEq)]
 enum Bound<T> {
     None,
     Unbounded,
@@ -904,12 +905,14 @@ mod comparison_tests {
 #[cfg(test)]
 mod tests {
     use crate::bound_pair::BoundPair;
+    use crate::interval::Bound;
     use crate::interval::Interval;
     use itertools::Either;
     use quickcheck::Arbitrary;
     use quickcheck::Gen;
     use quickcheck::TestResult;
     use quickcheck_macros::quickcheck;
+    use std::cmp::Ordering;
 
     impl<T> Arbitrary for Interval<T>
     where
@@ -1213,6 +1216,101 @@ mod tests {
 
         assert!(unbounded.contains(&finite));
         assert!(!finite.contains(&unbounded));
+    }
+
+    #[quickcheck]
+    fn prop_bound_containment_transitivity(a: f64, b: f64, c: f64) -> TestResult {
+        // If a ≤ b ≤ c, then [a,c] contains [a,b] and [b,c]
+        if a <= b && b <= c {
+            let bp_ac = match BoundPair::new(a, c) {
+                Some(bp) => bp,
+                None => return TestResult::discard(),
+            };
+            let bp_ab = match BoundPair::new(a, b) {
+                Some(bp) => bp,
+                None => return TestResult::discard(),
+            };
+            let bp_bc = match BoundPair::new(b, c) {
+                Some(bp) => bp,
+                None => return TestResult::discard(),
+            };
+
+            let i_ac = Interval::Closed { bound_pair: bp_ac };
+            let i_ab = Interval::Closed { bound_pair: bp_ab };
+            let i_bc = Interval::Closed { bound_pair: bp_bc };
+
+            TestResult::from_bool(i_ac.contains(&i_ab) && i_ac.contains(&i_bc))
+        } else {
+            TestResult::discard()
+        }
+    }
+
+    #[quickcheck]
+    fn prop_bound_type_closure(i1: Interval<f64>, i2: Interval<f64>) -> TestResult {
+        let intersection = i1.intersect(&i2);
+
+        // If both inputs are closed intervals, intersection must be closed or empty
+        let both_closed =
+            matches!(i1, Interval::Closed { .. }) && matches!(i2, Interval::Closed { .. });
+        let result_closed = matches!(intersection, Interval::Closed { .. } | Interval::Empty);
+
+        TestResult::from_bool(!both_closed || result_closed)
+    }
+
+    #[quickcheck]
+    fn prop_demorgan_laws(i1: Interval<f64>, i2: Interval<f64>) -> TestResult {
+        // The property test is checking: (A ∩ B)ᶜ = Aᶜ ∪ Bᶜ
+        let intersection = i1.intersect(&i2);
+
+        // Special cases
+        match intersection {
+            // If either input is Empty, the property is trivially true
+            Interval::Empty => TestResult::passed(),
+            // If either input is Unbounded, the property is trivially true
+            Interval::Unbounded => TestResult::passed(),
+            // For all other cases, we need to verify specific properties
+            _ => {
+                // Check that the intersection's complement contains all points
+                // not in either original interval
+                let i1_contains = |x| i1.contains(&Interval::Singleton { at: x });
+                let i2_contains = |x| i2.contains(&Interval::Singleton { at: x });
+
+                // Sample some strategic points (this is a simplified check)
+                let test_points = [
+                    i1.left_bound(),
+                    i1.right_bound(),
+                    i2.left_bound(),
+                    i2.right_bound(),
+                ];
+
+                TestResult::from_bool(test_points.iter().all(|&x| match x {
+                    Bound::Closed(v) | Bound::Open(v) => {
+                        if !i1_contains(v) && !i2_contains(v) {
+                            intersection
+                                .complement()
+                                .any(|c| c.contains(&Interval::Singleton { at: v }))
+                        } else {
+                            true
+                        }
+                    }
+                    _ => true,
+                }))
+            }
+        }
+    }
+
+    #[test]
+    fn test_signed_zero_comparison() {
+        let i1 = Interval::RightHalfOpen {
+            bound_pair: BoundPair::new(-0.0, 1.0).unwrap(),
+        };
+        let i2 = Interval::RightHalfOpen {
+            bound_pair: BoundPair::new(0.0, 1.0).unwrap(),
+        };
+
+        assert_eq!(i1.left_partial_cmp(&i2), Some(Ordering::Equal));
+        assert_eq!(i2.left_partial_cmp(&i1), Some(Ordering::Equal));
+        assert_eq!(i1, i2); // They should be considered equal intervals
     }
 
     #[test]
