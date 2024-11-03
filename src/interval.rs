@@ -797,6 +797,111 @@ mod bound_tests {
 }
 
 #[cfg(test)]
+mod comparison_tests {
+    use super::*;
+    use std::cmp::Ordering;
+
+    #[test]
+    fn test_left_partial_cmp_basic() {
+        let i1 = Interval::Closed {
+            bound_pair: BoundPair::new(1, 5).unwrap(),
+        };
+        let i2 = Interval::Closed {
+            bound_pair: BoundPair::new(2, 6).unwrap(),
+        };
+        assert_eq!(i1.left_partial_cmp(&i2), Some(Ordering::Less));
+        assert_eq!(i2.left_partial_cmp(&i1), Some(Ordering::Greater));
+    }
+
+    #[test]
+    fn test_left_partial_cmp_equal_bounds() {
+        let closed = Interval::Closed {
+            bound_pair: BoundPair::new(1, 5).unwrap(),
+        };
+        let open = Interval::Open {
+            bound_pair: BoundPair::new(1, 5).unwrap(),
+        };
+        // Open bound is considered "greater" than closed bound at same value
+        assert_eq!(closed.left_partial_cmp(&open), Some(Ordering::Less));
+        assert_eq!(open.left_partial_cmp(&closed), Some(Ordering::Greater));
+    }
+
+    #[test]
+    fn test_left_partial_cmp_unbounded() {
+        let finite = Interval::Closed {
+            bound_pair: BoundPair::new(1, 5).unwrap(),
+        };
+        let unbounded = Interval::Unbounded;
+        assert_eq!(finite.left_partial_cmp(&unbounded), Some(Ordering::Greater));
+        assert_eq!(unbounded.left_partial_cmp(&finite), Some(Ordering::Less));
+    }
+
+    #[test]
+    fn test_left_partial_cmp_empty() {
+        let interval = Interval::Closed {
+            bound_pair: BoundPair::new(1, 5).unwrap(),
+        };
+        let empty = Interval::Empty;
+        assert_eq!(interval.left_partial_cmp(&empty), None);
+        assert_eq!(empty.left_partial_cmp(&interval), None);
+    }
+
+    #[test]
+    fn test_right_partial_cmp_basic() {
+        let i1 = Interval::Closed {
+            bound_pair: BoundPair::new(1, 5).unwrap(),
+        };
+        let i2 = Interval::Closed {
+            bound_pair: BoundPair::new(2, 6).unwrap(),
+        };
+        assert_eq!(i1.right_partial_cmp(&i2), Some(Ordering::Less));
+        assert_eq!(i2.right_partial_cmp(&i1), Some(Ordering::Greater));
+    }
+
+    #[test]
+    fn test_right_partial_cmp_mixed_bounds() {
+        let closed = Interval::Closed {
+            bound_pair: BoundPair::new(1, 5).unwrap(),
+        };
+        let half_open = Interval::RightHalfOpen {
+            bound_pair: BoundPair::new(1, 5).unwrap(),
+        };
+        // Open bound is considered "less" than closed bound at same value
+        assert_eq!(
+            closed.right_partial_cmp(&half_open),
+            Some(Ordering::Greater)
+        );
+        assert_eq!(half_open.right_partial_cmp(&closed), Some(Ordering::Less));
+    }
+
+    #[test]
+    fn test_right_partial_cmp_unbounded() {
+        let finite = Interval::Closed {
+            bound_pair: BoundPair::new(1, 5).unwrap(),
+        };
+        let unbounded_left = Interval::UnboundedClosedLeft { left: 1 };
+        assert_eq!(
+            finite.right_partial_cmp(&unbounded_left),
+            Some(Ordering::Less)
+        );
+        assert_eq!(
+            unbounded_left.right_partial_cmp(&finite),
+            Some(Ordering::Greater)
+        );
+    }
+
+    #[test]
+    fn test_right_partial_cmp_empty() {
+        let interval = Interval::Closed {
+            bound_pair: BoundPair::new(1, 5).unwrap(),
+        };
+        let empty = Interval::Empty;
+        assert_eq!(interval.right_partial_cmp(&empty), None);
+        assert_eq!(empty.right_partial_cmp(&interval), None);
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use crate::bound_pair::BoundPair;
     use crate::interval::Interval;
