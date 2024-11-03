@@ -703,6 +703,100 @@ where
 }
 
 #[cfg(test)]
+mod bound_tests {
+    use super::*;
+
+    #[test]
+    fn test_left_bound() {
+        // Test bounded intervals
+        let bp = BoundPair::new(1, 5).unwrap();
+
+        // Closed interval should have closed left bound
+        assert!(matches!(
+            Interval::Closed { bound_pair: bp }.left_bound(),
+            Bound::Closed(1)
+        ));
+
+        // Open interval should have open left bound
+        assert!(matches!(
+            Interval::Open { bound_pair: bp }.left_bound(),
+            Bound::Open(1)
+        ));
+
+        // Test unbounded intervals
+        assert!(matches!(
+            Interval::Unbounded::<i32>.left_bound(),
+            Bound::Unbounded
+        ));
+
+        // Test empty interval
+        assert!(matches!(Interval::Empty::<i32>.left_bound(), Bound::None));
+
+        // Test singleton
+        assert!(matches!(
+            Interval::Singleton { at: 3 }.left_bound(),
+            Bound::Closed(3)
+        ));
+
+        // Test half-open intervals
+        assert!(matches!(
+            Interval::LeftHalfOpen { bound_pair: bp }.left_bound(),
+            Bound::Open(1)
+        ));
+        assert!(matches!(
+            Interval::RightHalfOpen { bound_pair: bp }.left_bound(),
+            Bound::Closed(1)
+        ));
+    }
+
+    #[test]
+    fn test_right_bound() {
+        let bp = BoundPair::new(1, 5).unwrap();
+
+        // Test bounded intervals
+        assert!(matches!(
+            Interval::Closed { bound_pair: bp }.right_bound(),
+            Bound::Closed(5)
+        ));
+        assert!(matches!(
+            Interval::Open { bound_pair: bp }.right_bound(),
+            Bound::Open(5)
+        ));
+
+        // Test special cases
+        assert!(matches!(
+            Interval::Unbounded::<i32>.right_bound(),
+            Bound::Unbounded
+        ));
+        assert!(matches!(Interval::Empty::<i32>.right_bound(), Bound::None));
+        assert!(matches!(
+            Interval::Singleton { at: 3 }.right_bound(),
+            Bound::Closed(3)
+        ));
+
+        // Test unbounded variants
+        assert!(matches!(
+            Interval::UnboundedClosedLeft { left: 1 }.right_bound(),
+            Bound::Unbounded
+        ));
+        assert!(matches!(
+            Interval::UnboundedOpenLeft { left: 1 }.right_bound(),
+            Bound::Unbounded
+        ));
+
+        // Test half-open intervals
+        assert!(matches!(
+            Interval::LeftHalfOpen { bound_pair: bp }.right_bound(),
+            Bound::Closed(5)
+        ));
+        assert!(matches!(
+            Interval::RightHalfOpen { bound_pair: bp }.right_bound(),
+            Bound::Open(5)
+        ));
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use crate::bound_pair::BoundPair;
     use crate::interval::Interval;
