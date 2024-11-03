@@ -937,4 +937,89 @@ mod tests {
 
         TestResult::from_bool(double_complement == i)
     }
+    #[test]
+    fn test_basic_contains() {
+        let outer = Interval::Closed {
+            bound_pair: BoundPair::new(0, 10).unwrap(),
+        };
+        let inner = Interval::Closed {
+            bound_pair: BoundPair::new(2, 8).unwrap(),
+        };
+        assert!(outer.contains(&inner));
+        assert!(!inner.contains(&outer));
+    }
+
+    #[test]
+    fn test_empty_interval_contains() {
+        let interval = Interval::Closed {
+            bound_pair: BoundPair::new(0, 10).unwrap(),
+        };
+        let empty = Interval::Empty;
+
+        // The empty interval is not contained by any interval
+        assert!(!interval.contains(&empty));
+        // Empty interval contains nothing, not even itself
+        assert!(!empty.contains(&empty));
+        assert!(!empty.contains(&interval));
+    }
+
+    #[test]
+    fn test_unbounded_contains() {
+        let unbounded = Interval::Unbounded;
+        let finite = Interval::Closed {
+            bound_pair: BoundPair::new(0, 10).unwrap(),
+        };
+
+        assert!(unbounded.contains(&finite));
+        assert!(!finite.contains(&unbounded));
+    }
+
+    #[test]
+    fn test_mixed_bound_types() {
+        let closed = Interval::Closed {
+            bound_pair: BoundPair::new(0, 10).unwrap(),
+        };
+        let open = Interval::Open {
+            bound_pair: BoundPair::new(0, 10).unwrap(),
+        };
+
+        // Closed interval contains its open counterpart
+        assert!(closed.contains(&open));
+        // Open interval does not contain its closed counterpart
+        assert!(!open.contains(&closed));
+    }
+
+    #[test]
+    fn test_singleton_contains() {
+        let singleton = Interval::Singleton { at: 5 };
+        let containing = Interval::Closed {
+            bound_pair: BoundPair::new(0, 10).unwrap(),
+        };
+        let not_containing = Interval::Open {
+            bound_pair: BoundPair::new(0, 5).unwrap(),
+        };
+
+        assert!(containing.contains(&singleton));
+        // Open interval does not contain singleton on its bounds
+        assert!(!not_containing.contains(&singleton));
+        // Singleton only contains itself
+        assert!(singleton.contains(&singleton));
+    }
+
+    #[quickcheck]
+    fn prop_contains_transitive(a: f64, b: f64, c: f64) -> TestResult {
+        if let (Some(bp1), Some(bp2), Some(bp3)) = (
+            BoundPair::new(a, b),
+            BoundPair::new(b, c),
+            BoundPair::new(a, c),
+        ) {
+            let i1 = Interval::Closed { bound_pair: bp1 };
+            let i2 = Interval::Closed { bound_pair: bp2 };
+            let i3 = Interval::Closed { bound_pair: bp3 };
+
+            TestResult::from_bool(!(i1.contains(&i2) && i2.contains(&i3)) || i1.contains(&i3))
+        } else {
+            TestResult::discard()
+        }
+    }
 }
