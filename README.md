@@ -5,8 +5,11 @@
 * Work in Progress
 * Scott Moeller
 
-[![Github Actions](https://img.shields.io/github/workflow/status/electronjoe/intervals-general/CI%20-%20Clippy%2C%20Rustfmt%2C%20Rustdoc%2C%20%26%20Tarpaulin/master?label=linting)](https://github.com)
-[![Codecov.io](https://img.shields.io/codecov/c/github/electronjoe/intervals-general/master)](https://codecov.io/gh/electronjoe/intervals-general)
+[![CI Status](https://github.com/electronjoe/intervals-general/actions/workflows/ci-tool-checks.yml/badge.svg)](https://github.com/electronjoe/intervals-general/actions)
+[![Code Coverage](https://codecov.io/gh/electronjoe/intervals-general/branch/main/graph/badge.svg)](https://codecov.io/gh/electronjoe/intervals-general)
+[![Crates.io](https://img.shields.io/crates/v/intervals-general)](https://crates.io/crates/intervals-general)
+[![Documentation](https://docs.rs/intervals-general/badge.svg)](https://docs.rs/intervals-general)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](README.md#license)
 
 ## Summary
 
