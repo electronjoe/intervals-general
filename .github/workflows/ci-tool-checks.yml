@@ -45,7 +45,10 @@ jobs:
 
       - name: Install cargo-tarpaulin
         if: github.event_name == 'push'
-        run: cargo install cargo-tarpaulin
+        run: |
+          if ! command -v cargo-tarpaulin &> /dev/null; then
+            cargo install cargo-tarpaulin
+          fi
 
       - name: Run tarpaulin
         if: github.event_name == 'push'
