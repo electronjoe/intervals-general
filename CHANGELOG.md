@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- None
+- Comprehensive new test coverage for interval bounds and comparisons
+- New test cases for intersection edge cases
+- Additional test coverage for empty interval behavior
+- Extended test suite for floating point bound handling
+- Serde test coverage for BoundPair serialization
 
 ### Changed
 - None
@@ -18,7 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - None
 
 ### Fixed
-- None
+- Floating point comparison edge cases in BoundPair creation
+  - Improved BoundPair::new() implementation to use partial_cmp for more robust comparison handling
 
 ### Security
 - None
