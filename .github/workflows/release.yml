@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - v[0-9]+.* # Matches v1.0.0, v0.1.0, etc
+      - v[0-9]+.*
 
 jobs:
   create-release:
@@ -40,7 +40,7 @@ jobs:
 
       - name: Check package version matches tag
         run: |
-          CARGO_VERSION=$(cargo pkgid | cut -d# -f2)
+          CARGO_VERSION=$(cargo metadata --format-version=1 --no-deps | jq -r '.packages[0].version')
           TAG_VERSION="${GITHUB_REF#refs/tags/v}"
           if [ "$CARGO_VERSION" != "$TAG_VERSION" ]; then
             echo "Package version ($CARGO_VERSION) does not match tag version ($TAG_VERSION)"
