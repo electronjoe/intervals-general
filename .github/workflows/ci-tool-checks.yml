@@ -9,59 +9,50 @@ jobs:
     strategy:
       matrix:
         toolchain:
-          - 1.54.0
+          - stable
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: ${{ matrix.toolchain }}
-          override: true
           components: rustfmt, clippy
 
-      # Tools-specific cache based on OS/compiler.
-      - name: Extract tools cache
-        uses: actions/cache@v2
+      - name: Setup cache
+        uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo
-            !~/.cargo/registry/index
-            !~/.cargo/git/checkouts
-            target
-            !target/tests
-            !target/examples
-          key: tools-${{ runner.os }}-${{ steps.install-rust.outputs.rustc_hash }}
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all --tests -- -D warnings
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Rustfmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+        run: cargo fmt --all -- --check
 
       - name: Rustdoc
-        uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --all --no-deps
         env:
-          RUSTDOCFLAGS: '-D warnings'
+          RUSTDOCFLAGS: "-D warnings"
+        run: cargo doc --all --no-deps
+
+      - name: Install cargo-tarpaulin
+        if: github.event_name == 'push'
+        run: cargo install cargo-tarpaulin
 
       - name: Run tarpaulin
-        uses: actions-rs/tarpaulin@v0.1
-        if: ${{ success() && github.event_name == 'push' }}
+        if: github.event_name == 'push'
+        run: cargo tarpaulin --out xml
 
       - name: Upload to codecov.io
-        uses: codecov/codecov-action@v1.0.2
-        if: ${{ success() && github.event_name == 'push' }}
+        if: github.event_name == 'push'
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
