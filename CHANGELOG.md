@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- None
+
+### Changed
+- None
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Fixed
+- None
+
+### Security
+- None
+
+## [0.1.1] - 2024-11-3
+### Added
 - Optional serde support with feature flag (thanks @misaka10987)
 - Re-export `Interval` type at crate root
 
